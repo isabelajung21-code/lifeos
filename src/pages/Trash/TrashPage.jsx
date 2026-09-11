@@ -36,12 +36,23 @@ export default function TrashPage({ currentUser }) {
         subscriptionsResult,
         goalsResult,
         investmentsResult,
+        shoppingItemsResult,
+        maintenancesResult,
+        assetsResult,
+        petVaccinationsResult,
+        petDewormingsResult,
+        petMedicationsResult,
+        petHealthPlansResult,
+        petWeightsResult,
+        petAppointmentsResult,
       ] = await Promise.all([
         supabase
           .from("tasks")
           .select("*")
-          .eq("owner_user_id", user.id)
-          .not("deleted_at", "is", null),
+          .not("deleted_at", "is", null)
+          .or(
+            `owner_user_id.eq.${user.id},source_module.eq.casa`
+          ),
 
         supabase
           .from("quick_notes")
@@ -109,13 +120,85 @@ export default function TrashPage({ currentUser }) {
           .select("*")
           .not("deleted_at", "is", null),
 
+
+        supabase
+          .from("house_shopping_items")
+          .select("*")
+          .not("deleted_at", "is", null),
+        
+        supabase
+          .from("house_maintenances")
+          .select("*")
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("house_assets")
+          .select("*")
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("pet_vaccinations")
+          .select(`
+            *,
+            pet:pets(id, name)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("pet_deworming")
+          .select(`
+            *,
+            pet:pets(id, name)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("pet_medications")
+          .select(`
+            *,
+            pet:pets(id, name)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("pet_health_plans")
+          .select(`
+            *,
+            pet:pets(id, name)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("pet_weights")
+          .select(`
+            *,
+            pet:pets(id, name)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("pet_appointments")
+          .select(`
+            *,
+            pet:pets(id, name)
+          `)
+          .not("deleted_at", "is", null),
+        
         ]);
 
       const tasks = (tasksResult.data || []).map((item) => ({
         ...item,
         type: "task",
         title: item.title,
-        module: item.source_module || "Geral",
+        module:
+          item.source_module === "casa"
+            ? "Casa"
+            : item.source_module || "Geral",
+
+        typeLabel:
+          item.source_module === "casa"
+            ? "Tarefa doméstica"
+            : "Tarefa",
       }));
 
       const notes = (notesResult.data || []).map((item) => ({
@@ -219,6 +302,103 @@ export default function TrashPage({ currentUser }) {
         module: "Financeiro",
       }));
 
+
+      const shoppingItems = (
+        shoppingItemsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "house_shopping_item",
+        title: item.item_name,
+        module: "Casa",
+      }));
+
+      const maintenances = (
+        maintenancesResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "house_maintenance",
+        title: item.title,
+        module: "Casa",
+      }));
+
+      const houseAssets = (
+        assetsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "house_asset",
+        title: item.name,
+        module: "Casa",
+      }));
+
+      const petVaccinations = (
+        petVaccinationsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "pet_vaccination",
+        title: `${item.pet?.name || "Pet"} • ${
+          item.vaccine_name || "Vacina"
+        }`,
+        module: "Pets",
+      }));
+
+      const petDewormings = (
+        petDewormingsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "pet_deworming",
+        title: `${item.pet?.name || "Pet"} • ${
+          item.medication_name || "Vermífugo"
+        }`,
+        module: "Pets",
+      }));
+
+      const petMedications = (
+        petMedicationsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "pet_medication",
+        title: `${item.pet?.name || "Pet"} • ${
+          item.medication_name || "Medicamento"
+        }`,
+        module: "Pets",
+      }));
+
+      const petHealthPlans = (
+        petHealthPlansResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "pet_health_plan",
+        title: `${item.pet?.name || "Pet"} • ${
+          item.plan_name ||
+          item.provider ||
+          "Plano de saúde"
+        }`,
+        module: "Pets",
+      }));
+
+      const petWeights = (
+        petWeightsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "pet_weight",
+        title: `${item.pet?.name || "Pet"} • ${
+          Number(item.weight || 0)
+        } kg`,
+        module: "Pets",
+      }));
+
+      const petAppointments = (
+        petAppointmentsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "pet_appointment",
+        title: `${item.pet?.name || "Pet"} • ${
+          item.appointment_type ||
+          "Atendimento"
+        }`,
+        module: "Pets",
+      }));
+
       const all = [
         ...tasks,
         ...notes,
@@ -232,6 +412,15 @@ export default function TrashPage({ currentUser }) {
         ...subscriptions,
         ...goals,
         ...investments,
+        ...shoppingItems,
+        ...maintenances,
+        ...houseAssets,
+        ...petVaccinations,
+        ...petDewormings,
+        ...petMedications,
+        ...petHealthPlans,
+        ...petWeights,
+        ...petAppointments,
       ].sort(
         (a, b) =>
           new Date(b.deleted_at) - new Date(a.deleted_at)
@@ -260,12 +449,28 @@ export default function TrashPage({ currentUser }) {
       finance_subscription: "finance_subscriptions",
       finance_goal: "finance_goals",
       finance_investment: "finance_investments",
+      house_shopping_item: "house_shopping_items",
+      house_maintenance: "house_maintenances",
+      house_asset: "house_assets",
+      pet_vaccination: "pet_vaccinations",
+      pet_deworming: "pet_deworming",
+      pet_medication: "pet_medications",
+      pet_health_plan: "pet_health_plans",
+      pet_weight: "pet_weights",
+      pet_appointment: "pet_appointments",
     };
 
     return tables[type];
   }
 
-  function getTypeLabel(type) {
+  function getTypeLabel(item) {
+    if (
+      item.type === "task" &&
+      item.source_module === "casa"
+    ) {
+      return "Tarefa doméstica";
+    }
+
     const labels = {
       task: "Tarefa",
       note: "Anotação",
@@ -280,9 +485,19 @@ export default function TrashPage({ currentUser }) {
       finance_subscription: "Assinatura",
       finance_goal: "Meta financeira",
       finance_investment: "Investimento",
+
+      house_shopping_item: "Item da lista de compras",
+      house_maintenance: "Manutenção da casa",
+      house_asset: "Móvel / Eletro",
+      pet_vaccination: "Vacina",
+      pet_deworming: "Vermífugo",
+      pet_medication: "Medicamento",
+      pet_health_plan: "Plano de saúde",
+      pet_weight: "Registro de peso",
+      pet_appointment: "Consulta / Atendimento",
     };
 
-    return labels[type] || "Item";
+    return labels[item.type] || "Item";
   }
 
   async function restoreItem(item) {
@@ -465,6 +680,66 @@ export default function TrashPage({ currentUser }) {
 
       if (restoreError) {
         throw restoreError;
+      }
+
+      // =====================================
+      // PETS — RECALCULA PESO ATUAL
+      // =====================================
+
+      if (item.type === "pet_weight") {
+        const { data: latestWeight, error: weightError } =
+          await supabase
+            .from("pet_weights")
+            .select("weight, measured_at, created_at")
+            .eq("pet_id", item.pet_id)
+            .is("deleted_at", null)
+            .order("measured_at", {
+              ascending: false,
+            })
+            .order("created_at", {
+              ascending: false,
+            })
+            .limit(1)
+            .maybeSingle();
+
+        if (weightError) {
+          throw weightError;
+        }
+
+        const { error: petUpdateError } =
+          await supabase
+            .from("pets")
+            .update({
+              current_weight:
+                latestWeight?.weight ?? null,
+            })
+            .eq("id", item.pet_id);
+
+        if (petUpdateError) {
+          throw petUpdateError;
+        }
+      }
+
+      if (item.type === "task") {
+        await supabase
+          .from("activity_logs")
+          .insert({
+            user_id: user.id,
+            module:
+              item.source_module === "casa"
+                ? "Casa"
+                : item.source_module || "Geral",
+            action: "restored",
+            entity_type: "task",
+            entity_id: item.id,
+            entity_name: item.title,
+            details: {
+              message:
+                item.source_module === "casa"
+                  ? `Restaurou a tarefa doméstica: ${item.title}`
+                  : `Restaurou a tarefa: ${item.title}`,
+            },
+          });
       }
 
       // =====================================
@@ -793,6 +1068,52 @@ export default function TrashPage({ currentUser }) {
           });
       }
 
+      // =====================================
+      // HISTÓRICO GENÉRICO DE RESTAURAÇÃO
+      // PARA TIPOS SEM TRATAMENTO ESPECÍFICO
+      // =====================================
+
+      const typesWithSpecificRestoreLog = [
+        "task",
+        "finance_transaction",
+        "finance_recurrence",
+        "finance_budget",
+        "finance_subscription",
+        "finance_goal",
+        "finance_investment",
+      ];
+
+      if (
+        !typesWithSpecificRestoreLog.includes(
+          item.type
+        )
+      ) {
+        const { error: logError } =
+          await supabase
+            .from("activity_logs")
+            .insert({
+              user_id: user.id,
+              module: item.module || "Geral",
+              action: "restored",
+              entity_type: item.type,
+              entity_id: item.id,
+              entity_name:
+                item.title || "Item restaurado",
+              details: {
+                message: `Restaurou: ${
+                  item.title || "item"
+                }`,
+              },
+            });
+
+        if (logError) {
+          console.error(
+            "Erro ao registrar restauração no histórico:",
+            logError
+          );
+        }
+      }
+
       await loadTrash();
     } catch (error) {
       console.error(
@@ -1100,6 +1421,44 @@ export default function TrashPage({ currentUser }) {
         throw deleteError;
       }
 
+      // =====================================
+      // PETS — RECALCULA PESO APÓS EXCLUSÃO
+      // =====================================
+
+      if (item.type === "pet_weight") {
+        const { data: latestWeight, error: weightError } =
+          await supabase
+            .from("pet_weights")
+            .select("weight, measured_at, created_at")
+            .eq("pet_id", item.pet_id)
+            .is("deleted_at", null)
+            .order("measured_at", {
+              ascending: false,
+            })
+            .order("created_at", {
+              ascending: false,
+            })
+            .limit(1)
+            .maybeSingle();
+
+        if (weightError) {
+          throw weightError;
+        }
+
+        const { error: petUpdateError } =
+          await supabase
+            .from("pets")
+            .update({
+              current_weight:
+                latestWeight?.weight ?? null,
+            })
+            .eq("id", item.pet_id);
+
+        if (petUpdateError) {
+          throw petUpdateError;
+        }
+      }
+
       await supabase
         .from("activity_logs")
         .insert({
@@ -1247,7 +1606,7 @@ export default function TrashPage({ currentUser }) {
                     borderRadius: 999,
                   }}
                 >
-                  {getTypeLabel(item.type)}
+                  {getTypeLabel(item)}
                 </div>
               </div>
 

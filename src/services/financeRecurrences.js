@@ -207,105 +207,283 @@ export async function processFinanceRecurrences() {
         throw existingError;
       }
 
-      // =====================================
-      // CRIA A MOVIMENTAÇÃO
-      // =====================================
+            // =====================================
+            // CRIA A MOVIMENTAÇÃO
+            // =====================================
 
-      if (!existing?.length) {
-        const transactionPayload = {
-          type:
-            recurrence.transaction_type,
+            if (!existing?.length) {
+              const isHouseRecurrence =
+                recurrence.source_module === "casa";
 
-          title:
-            recurrence.title,
+              let houseBillTemplate = null;
 
-          amount:
-            Number(recurrence.amount),
+              // =====================================
+              // SE VEIO DE CASA, BUSCA OS DADOS
+              // DA CONTA ORIGINAL
+              // =====================================
 
-          category_id:
-            recurrence.category_id ||
-            null,
+              if (isHouseRecurrence) {
+                if (!recurrence.source_id) {
+                  throw new Error(
+                    `Recorrência da Casa "${recurrence.title}" está sem source_id.`
+                  );
+                }
 
-          account_id:
-            recurrence.account_id ||
-            null,
+                const {
+                  data: template,
+                  error: templateError,
+                } = await supabase
+                  .from("house_bills")
+                  .select(
+                    `
+                      id,
+                      bill_type,
+                      provider,
+                      notes
+                    `
+                  )
+                  .eq(
+                    "id",
+                    recurrence.source_id
+                  )
+                  .maybeSingle();
 
-          card_id:
-            recurrence.card_id ||
-            null,
+                if (templateError) {
+                  console.error(
+                    "Erro ao buscar conta da Casa usada como modelo:",
+                    templateError
+                  );
 
-          transaction_date:
-            nextDate,
+                  throw templateError;
+                }
 
-          due_date: null,
-          paid_date: null,
+                if (!template) {
+                  throw new Error(
+                    `Não foi possível localizar os dados da conta da Casa "${recurrence.title}".`
+                  );
+                }
 
-          status: "previsto",
+                houseBillTemplate =
+                  template;
+              }
 
-          notes:
-            recurrence.notes || null,
+              // =====================================
+              // MONTA A MOVIMENTAÇÃO FINANCEIRA
+              // =====================================
 
-          source_module:
-            "financeiro",
+              const transactionPayload = {
+                type:
+                  recurrence.transaction_type,
 
-          created_by_user_id:
-            recurrence.created_by_user_id ||
-            null,
+                title:
+                  recurrence.title,
 
-          recurrence_id:
-            recurrence.id,
+                amount:
+                  Number(recurrence.amount),
 
-          is_recurring: true,
+                category_id:
+                  recurrence.category_id ||
+                  null,
 
-          installment_group_id:
-            null,
+                account_id:
+                  recurrence.account_id ||
+                  null,
 
-          installment_number:
-            null,
+                card_id:
+                  recurrence.card_id ||
+                  null,
 
-          total_installments: 1,
+                transaction_date:
+                  nextDate,
 
-          invoice_payment_id:
-            null,
-        };
+                due_date:
+                  null,
 
-        const {
-          error: insertError,
-        } = await supabase
-          .from(
-            "finance_transactions"
-          )
-          .insert(
-            transactionPayload
-          );
+                paid_date:
+                  null,
 
-        if (insertError) {
-          // Outra execução pode ter criado a mesma
-          // ocorrência entre o SELECT e o INSERT.
-          //
-          // O índice único do banco garante que não
-          // haverá duplicação. Nesse caso, seguimos
-          // normalmente para atualizar next_run_date.
-          if (insertError.code === "23505") {
-            console.warn(
-              "Ocorrência recorrente já existente:",
-              recurrence.id,
-              nextDate
-            );
-          } else {
-            console.error(
-              "Erro ao gerar movimentação recorrente:",
-              insertError
-            );
+                status:
+                  "previsto",
 
-            throw insertError;
-          }
-        } else {
-          created += 1;
-        }
+                notes:
+                  recurrence.notes || null,
 
-        created += 1;
-      }
+                source_module:
+                  recurrence.source_module ||
+                  "financeiro",
+
+                // Para Casa, o source_id será definido
+                // somente depois que criarmos o novo
+                // house_bills desta ocorrência.
+                source_id:
+                  isHouseRecurrence
+                    ? null
+                    : recurrence.source_id ||
+                      null,
+
+                created_by_user_id:
+                  recurrence.created_by_user_id ||
+                  null,
+
+                recurrence_id:
+                  recurrence.id,
+
+                is_recurring:
+                  true,
+
+                installment_group_id:
+                  null,
+
+                installment_number:
+                  null,
+
+                total_installments:
+                  1,
+
+                invoice_payment_id:
+                  null,
+              };
+
+              // =====================================
+              // CRIA FINANCE_TRANSACTION
+              // =====================================
+
+              const {
+                data: insertedTransaction,
+                error: insertError,
+              } = await supabase
+                .from(
+                  "finance_transactions"
+                )
+                .insert(
+                  transactionPayload
+                )
+                .select("id")
+                .single();
+
+              if (insertError) {
+                // Outra execução pode ter criado
+                // a ocorrência entre o SELECT
+                // e o INSERT.
+                if (
+                  insertError.code ===
+                  "23505"
+                ) {
+                  console.warn(
+                    "Ocorrência recorrente já existente:",
+                    recurrence.id,
+                    nextDate
+                  );
+                } else {
+                  console.error(
+                    "Erro ao gerar movimentação recorrente:",
+                    insertError
+                  );
+
+                  throw insertError;
+                }
+              } else {
+                // =====================================
+                // SE FOR CASA, CRIA NOVO HOUSE_BILLS
+                // PARA ESTA OCORRÊNCIA
+                // =====================================
+
+                if (
+                  isHouseRecurrence &&
+                  insertedTransaction?.id
+                ) {
+                  const {
+                    data: newHouseBill,
+                    error: houseBillError,
+                  } = await supabase
+                    .from("house_bills")
+                    .insert({
+                      transaction_id:
+                        insertedTransaction.id,
+
+                      bill_type:
+                        houseBillTemplate.bill_type,
+
+                      provider:
+                        houseBillTemplate.provider ||
+                        null,
+
+                      notes:
+                        houseBillTemplate.notes ||
+                        null,
+                    })
+                    .select("id")
+                    .single();
+
+                  if (houseBillError) {
+                    console.error(
+                      "Erro ao criar conta recorrente da Casa:",
+                      houseBillError
+                    );
+
+                    // Remove a movimentação financeira
+                    // criada nesta tentativa para não
+                    // deixar registro órfão.
+                    await supabase
+                      .from(
+                        "finance_transactions"
+                      )
+                      .delete()
+                      .eq(
+                        "id",
+                        insertedTransaction.id
+                      );
+
+                    throw houseBillError;
+                  }
+
+                  // =====================================
+                  // VINCULA A MOVIMENTAÇÃO AO NOVO
+                  // HOUSE_BILLS
+                  // =====================================
+
+                  const {
+                    error: sourceLinkError,
+                  } = await supabase
+                    .from(
+                      "finance_transactions"
+                    )
+                    .update({
+                      source_id:
+                        newHouseBill.id,
+                    })
+                    .eq(
+                      "id",
+                      insertedTransaction.id
+                    );
+
+                  if (sourceLinkError) {
+                    console.error(
+                      "Erro ao vincular movimentação à conta da Casa:",
+                      sourceLinkError
+                    );
+
+                    // Exclui a movimentação criada.
+                    // Se a FK estiver com ON DELETE CASCADE,
+                    // o house_bills correspondente também
+                    // será removido.
+                    await supabase
+                      .from(
+                        "finance_transactions"
+                      )
+                      .delete()
+                      .eq(
+                        "id",
+                        insertedTransaction.id
+                      );
+
+                    throw sourceLinkError;
+                  }
+                }
+
+                created += 1;
+              }
+            }
 
       // =====================================
       // CALCULA PRÓXIMA EXECUÇÃO

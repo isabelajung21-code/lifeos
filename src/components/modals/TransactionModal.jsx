@@ -31,6 +31,9 @@ export default function TransactionModal({
   onSaved,
   transactionToEdit,
   initialType = "despesa",
+  sourceModule = "financeiro",
+  sourceId = null,
+  houseBillToEdit = null,
 }) {
   const [form, setForm] = useState(initialForm);
   const [categories, setCategories] = useState([]);
@@ -38,6 +41,10 @@ export default function TransactionModal({
   const [cards, setCards] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [houseBillForm, setHouseBillForm] = useState({
+    bill_type: "energia",
+    provider: "",
+  });
   const [hasPaidInstallments, setHasPaidInstallments] = useState(false);
   const [showRecurrenceEditOptions, setShowRecurrenceEditOptions] =
     useState(false);
@@ -47,6 +54,28 @@ export default function TransactionModal({
 
     loadOptions();
     setError("");
+
+    if (
+      sourceModule === "casa" &&
+      houseBillToEdit
+    ) {
+      setHouseBillForm({
+        bill_type:
+          houseBillToEdit.bill_type ||
+          "energia",
+
+        provider:
+          houseBillToEdit.provider ||
+          "",
+      });
+    } else if (
+      sourceModule === "casa"
+    ) {
+      setHouseBillForm({
+        bill_type: "energia",
+        provider: "",
+      });
+    }
 
     if (transactionToEdit) {
       async function loadTransactionForEdit() {
@@ -180,7 +209,13 @@ export default function TransactionModal({
               .slice(0, 10),
           });
         }
-        }, [open, transactionToEdit, initialType]);
+        }, [
+          open,
+          transactionToEdit,
+          initialType,
+          sourceModule,
+          houseBillToEdit,
+        ]);
 
   async function loadOptions() {
     const [categoriesResult, accountsResult, cardsResult] = await Promise.all([
@@ -214,6 +249,50 @@ export default function TransactionModal({
     setAccounts(accountsResult.data || []);
     setCards(cardsResult.data || []);
   }
+
+  useEffect(() => {
+    if (sourceModule !== "casa") return;
+    if (!categories.length) return;
+
+    const categoryName = getHouseCategoryName(
+      houseBillForm.bill_type
+    );
+
+    const category = categories.find(
+      (item) =>
+        item.type === "despesa" &&
+        item.name?.toLowerCase() ===
+          categoryName.toLowerCase()
+    );
+
+    setForm((prev) => ({
+      ...prev,
+      type: "despesa",
+      category_id: category?.id || "",
+    }));
+  }, [
+    sourceModule,
+    houseBillForm.bill_type,
+    categories,
+  ]);
+
+  useEffect(() => {
+    if (sourceModule !== "pets") return;
+    if (!categories.length) return;
+
+    const petsCategory = categories.find(
+      (item) =>
+        item.type === "despesa" &&
+        item.name?.toLowerCase() === "pets"
+    );
+
+    setForm((prev) => ({
+      ...prev,
+      type: "despesa",
+      category_id:
+        petsCategory?.id || "",
+    }));
+  }, [sourceModule, categories]);
 
   function handleChange(field, value) {
     setForm((prev) => ({
@@ -362,6 +441,82 @@ export default function TransactionModal({
     ].join("-");
   }
 
+  function getHouseCategoryName(billType) {
+    if (
+      ["condominio", "aluguel", "financiamento"].includes(
+        billType
+      )
+    ) {
+      return "Moradia";
+    }
+
+    return "Casa";
+  }
+
+  async function rollbackCreatedHouseTransactions(
+    createdTransactions = []
+  ) {
+    const transactionIds = createdTransactions
+      .map((item) => item?.id)
+      .filter(Boolean);
+
+    if (transactionIds.length === 0) return;
+
+    // Primeiro remove os metadados da Casa que já
+    // possam ter sido criados para essas movimentações.
+    const { error: houseBillsRollbackError } =
+      await supabase
+        .from("house_bills")
+        .delete()
+        .in("transaction_id", transactionIds);
+
+    if (houseBillsRollbackError) {
+      console.error(
+        "Erro ao reverter metadados da Casa:",
+        houseBillsRollbackError
+      );
+    }
+
+    // Depois remove TODAS as movimentações financeiras
+    // criadas neste salvamento.
+    const { error: transactionsRollbackError } =
+      await supabase
+        .from("finance_transactions")
+        .delete()
+        .in("id", transactionIds);
+
+    if (transactionsRollbackError) {
+      console.error(
+        "Erro ao reverter movimentações financeiras:",
+        transactionsRollbackError
+      );
+
+      throw transactionsRollbackError;
+    }
+  }
+
+  async function rollbackCreatedRecurrence(
+    recurrenceId
+  ) {
+    if (!recurrenceId) return;
+
+    const {
+      error: recurrenceRollbackError,
+    } = await supabase
+      .from("finance_recurrences")
+      .delete()
+      .eq("id", recurrenceId);
+
+    if (recurrenceRollbackError) {
+      console.error(
+        "Erro ao reverter recorrência criada:",
+        recurrenceRollbackError
+      );
+
+      throw recurrenceRollbackError;
+    }
+  }
+
   async function handleSubmit(e, forcedRecurrenceScope = null) {
     e?.preventDefault?.();
 
@@ -431,15 +586,24 @@ export default function TransactionModal({
         status: form.status,
         notes:
           form.notes.trim() || null,
-        source_module: "financeiro",
+        source_module: sourceModule,
+        source_id:
+          transactionToEdit?.source_id ||
+          sourceId ||
+          null,
         created_by_user_id: user.id,
       };
 
       let result;
 
+      // Guarda somente a recorrência criada neste salvamento.
+      // Se alguma etapa posterior falhar, poderemos removê-la
+      // sem tocar em recorrências que já existiam.
+      let createdRecurrenceId = null;
+
       const totalInstallments =
         form.type === "despesa" &&
-        form.card_id
+        (form.card_id || sourceModule === "casa")
           ? Number(form.installments || 1)
           : 1;
 
@@ -557,6 +721,12 @@ export default function TransactionModal({
           notes:
             form.notes.trim() || null,
 
+          source_module:
+            sourceModule,
+
+          source_id:
+            sourceId || null,
+
           created_by_user_id:
             user.id,
         };
@@ -578,6 +748,8 @@ export default function TransactionModal({
         if (recurrenceError) {
           throw recurrenceError;
         }
+
+        createdRecurrenceId = recurrence.id;
 
         payload.recurrence_id =
           recurrence.id;
@@ -691,6 +863,17 @@ export default function TransactionModal({
 
             notes:
               form.notes.trim() || null,
+
+            source_module:
+              currentRecurrence.source_module ||
+              sourceModule ||
+              "financeiro",
+
+            source_id:
+              currentRecurrence.source_id ||
+              houseBillToEdit?.id ||
+              null,
+            
           };
 
           const commonTransactionData = {
@@ -1094,11 +1277,72 @@ export default function TransactionModal({
             throw updateGroupError;
           }
 
+          // =====================================
+          // ATUALIZA METADADOS DA CASA
+          // EM TODAS AS PARCELAS DO GRUPO
+          // =====================================
+
+          if (sourceModule === "casa") {
+            const {
+              data: groupTransactions,
+              error: groupTransactionsError,
+            } = await supabase
+              .from("finance_transactions")
+              .select("id")
+              .eq(
+                "installment_group_id",
+                transactionToEdit.installment_group_id
+              )
+              .is("deleted_at", null);
+
+            if (groupTransactionsError) {
+              throw groupTransactionsError;
+            }
+
+            const groupTransactionIds =
+              (groupTransactions || [])
+                .map((item) => item.id)
+                .filter(Boolean);
+
+            if (groupTransactionIds.length > 0) {
+              const {
+                error: houseBillsUpdateError,
+              } = await supabase
+                .from("house_bills")
+                .update({
+                  bill_type:
+                    houseBillForm.bill_type,
+
+                  provider:
+                    houseBillForm.provider.trim() ||
+                    null,
+
+                  notes:
+                    form.notes.trim() ||
+                    null,
+
+                  updated_at:
+                    new Date().toISOString(),
+                })
+                .in(
+                  "transaction_id",
+                  groupTransactionIds
+                );
+
+              if (houseBillsUpdateError) {
+                throw houseBillsUpdateError;
+              }
+            }
+          }
+
           await supabase
             .from("activity_logs")
             .insert({
               user_id: user.id,
-              module: "Financeiro",
+              module:
+                sourceModule === "casa"
+                  ? "Casa"
+                  : "Financeiro",
               action: "updated",
               entity_type:
                 "finance_transaction",
@@ -1175,35 +1419,20 @@ export default function TransactionModal({
               (item) => item.id
             );
 
-          if (oldIds.length > 0) {
-            const {
-              error: deleteOldError,
-            } = await supabase
-              .from(
-                "finance_transactions"
-              )
-              .delete()
-              .in("id", oldIds);
-
-            if (deleteOldError) {
-              throw deleteOldError;
-            }
-          }
-
           const newInstallments = [];
 
           for (
             let i = 1;
-            i <=
-            totalInstallmentsEdit;
+            i <= totalInstallmentsEdit;
             i++
           ) {
             const installmentCents =
               baseInstallmentCents +
-              (i ===
-              totalInstallmentsEdit
-                ? remainder
-                : 0);
+              (
+                i === totalInstallmentsEdit
+                  ? remainder
+                  : 0
+              );
 
             newInstallments.push({
               ...payload,
@@ -1212,8 +1441,7 @@ export default function TransactionModal({
                 form.title.trim(),
 
               amount:
-                installmentCents /
-                100,
+                installmentCents / 100,
 
               transaction_date:
                 addMonthsToDate(
@@ -1221,7 +1449,12 @@ export default function TransactionModal({
                   i - 1
                 ),
 
-              due_date: null,
+              due_date:
+                addMonthsToDate(
+                  form.due_date ||
+                    form.transaction_date,
+                  i - 1
+                ),
               paid_date: null,
 
               status: "previsto",
@@ -1234,25 +1467,166 @@ export default function TransactionModal({
               total_installments:
                 totalInstallmentsEdit,
 
-              invoice_payment_id:
-                null,
+              invoice_payment_id: null,
 
               recurrence_id: null,
               is_recurring: false,
+
+              // O vínculo será criado
+              // individualmente logo abaixo.
+              source_id: null,
             });
           }
 
-          result = await supabase
-            .from(
-              "finance_transactions"
-            )
-            .insert(
-              newInstallments
-            );
+          // =====================================
+          // 1. CRIA AS NOVAS PARCELAS
+          // sem apagar as antigas ainda
+          // =====================================
 
-          if (result.error) {
-            throw result.error;
+          const {
+            data: createdInstallments,
+            error: createInstallmentsError,
+          } = await supabase
+            .from("finance_transactions")
+            .insert(newInstallments)
+            .select();
+
+          if (createInstallmentsError) {
+            throw createInstallmentsError;
           }
+
+          try {
+            // =====================================
+            // 2. CRIA O HOUSE_BILLS
+            // DE CADA NOVA PARCELA
+            // =====================================
+
+            if (sourceModule === "casa") {
+              for (
+                const createdTransaction
+                of createdInstallments || []
+              ) {
+                const {
+                  data: newHouseBill,
+                  error: houseBillError,
+                } = await supabase
+                  .from("house_bills")
+                  .insert({
+                    transaction_id:
+                      createdTransaction.id,
+
+                    bill_type:
+                      houseBillForm.bill_type,
+
+                    provider:
+                      houseBillForm.provider.trim() ||
+                      null,
+
+                    notes:
+                      form.notes.trim() ||
+                      null,
+                  })
+                  .select()
+                  .single();
+
+                if (houseBillError) {
+                  throw houseBillError;
+                }
+
+                const {
+                  error: sourceLinkError,
+                } = await supabase
+                  .from(
+                    "finance_transactions"
+                  )
+                  .update({
+                    source_id:
+                      newHouseBill.id,
+                  })
+                  .eq(
+                    "id",
+                    createdTransaction.id
+                  );
+
+                if (sourceLinkError) {
+                  throw sourceLinkError;
+                }
+              }
+            }
+
+            // =====================================
+            // 3. SOMENTE AGORA APAGA
+            // AS PARCELAS ANTIGAS
+            // =====================================
+
+            if (oldIds.length > 0) {
+              const {
+                error: deleteOldError,
+              } = await supabase
+                .from(
+                  "finance_transactions"
+                )
+                .delete()
+                .in(
+                  "id",
+                  oldIds
+                );
+
+              if (deleteOldError) {
+                throw deleteOldError;
+              }
+            }
+          } catch (installmentEditError) {
+            // Se qualquer etapa falhar,
+            // remove somente as novas parcelas.
+            // As antigas ainda permanecem intactas.
+            try {
+              await rollbackCreatedHouseTransactions(
+                createdInstallments || []
+              );
+            } catch (rollbackError) {
+              console.error(
+                "Erro durante rollback da edição do parcelamento:",
+                rollbackError
+              );
+            }
+
+            throw installmentEditError;
+          }
+
+          await supabase
+            .from("activity_logs")
+            .insert({
+              user_id: user.id,
+
+              module:
+                sourceModule === "casa"
+                  ? "Casa"
+                  : "Financeiro",
+
+              action: "updated",
+
+              entity_type:
+                "finance_installment_group",
+
+              entity_id:
+                transactionToEdit.id,
+
+              entity_name:
+                form.title.trim(),
+
+              details: {
+                message:
+                  `Alterou o parcelamento: ${form.title.trim()} para ${totalInstallmentsEdit} parcela(s)`,
+                installment_group_id:
+                  groupId,
+              },
+            });
+
+          onSaved?.();
+          onClose?.();
+          return;
+        
         } else {
           // =====================================
           // EDIÇÃO NORMAL
@@ -1280,7 +1654,7 @@ export default function TransactionModal({
 
       else if (
         form.type === "despesa" &&
-        form.card_id &&
+        (form.card_id || sourceModule === "casa") &&
         totalInstallments > 1
       ) {
         const installmentGroupId =
@@ -1332,7 +1706,12 @@ export default function TransactionModal({
                 i - 1
               ),
 
-            due_date: null,
+            due_date:
+              addMonthsToDate(
+                form.due_date ||
+                  form.transaction_date,
+                i - 1
+              ),
             paid_date: null,
 
             status: "previsto",
@@ -1354,7 +1733,8 @@ export default function TransactionModal({
           .from(
             "finance_transactions"
           )
-          .insert(installments);
+          .insert(installments)
+          .select();
 
         if (result.error) {
           throw result.error;
@@ -1367,23 +1747,209 @@ export default function TransactionModal({
 
       else {
         result = await supabase
-          .from(
-            "finance_transactions"
-          )
+          .from("finance_transactions")
           .insert({
             ...payload,
 
-            installment_group_id:
-              null,
+            installment_group_id: null,
 
-            installment_number:
-              null,
+            installment_number: null,
 
             total_installments: 1,
-          });
+          })
+          .select()
+          .single();
 
         if (result.error) {
+          if (createdRecurrenceId) {
+            try {
+              await rollbackCreatedRecurrence(
+                createdRecurrenceId
+              );
+
+              createdRecurrenceId = null;
+            } catch (rollbackError) {
+              console.error(
+                "Erro ao remover recorrência após falha da movimentação:",
+                rollbackError
+              );
+            }
+          }
+
           throw result.error;
+        }
+      }
+
+            // =====================================
+            // VÍNCULO COM CASA
+            // =====================================
+
+            if (
+              sourceModule === "casa" &&
+              !transactionToEdit &&
+              result?.data
+            ) {
+              const createdTransactions =
+                Array.isArray(result.data)
+                  ? result.data
+                  : [result.data];
+
+              const createdHouseBills = [];
+
+              try {
+                for (const createdTransaction of createdTransactions) {
+                  if (!createdTransaction?.id) {
+                    continue;
+                  }
+
+                  const {
+                    data: houseBill,
+                    error: houseBillError,
+                  } = await supabase
+                    .from("house_bills")
+                    .insert({
+                      transaction_id:
+                        createdTransaction.id,
+
+                      bill_type:
+                        houseBillForm.bill_type,
+
+                      provider:
+                        houseBillForm.provider.trim() ||
+                        null,
+
+                      notes:
+                        form.notes.trim() ||
+                        null,
+                    })
+                    .select()
+                    .single();
+                  
+
+                  if (houseBillError) {
+                    throw houseBillError;
+                  }
+
+                  createdHouseBills.push(houseBill);
+
+                  const {
+                    error: sourceLinkError,
+                  } = await supabase
+                    .from("finance_transactions")
+                    .update({
+                      source_id: houseBill.id,
+                    })
+                    .eq(
+                      "id",
+                      createdTransaction.id
+                    );
+
+                  if (sourceLinkError) {
+                    throw sourceLinkError;
+                  }
+                }
+
+                // =====================================
+                // RECORRÊNCIA
+                //
+                // Só existe para movimentação única.
+                // Parcelamento nunca chega aqui
+                // como recorrência.
+                // =====================================
+
+                if (
+                  payload.recurrence_id &&
+                  createdHouseBills.length === 1
+                ) {
+                  const {
+                    error:
+                      recurrenceSourceLinkError,
+                  } = await supabase
+                    .from(
+                      "finance_recurrences"
+                    )
+                    .update({
+                      source_module: "casa",
+                      source_id:
+                        createdHouseBills[0].id,
+                    })
+                    .eq(
+                      "id",
+                      payload.recurrence_id
+                    );
+
+                  if (
+                    recurrenceSourceLinkError
+                  ) {
+                    throw recurrenceSourceLinkError;
+                  }
+                }
+              } catch (houseLinkError) {
+                try {
+                  await rollbackCreatedHouseTransactions(
+                    createdTransactions
+                  );
+                } catch (rollbackError) {
+                  console.error(
+                    "Erro durante rollback das contas da Casa:",
+                    rollbackError
+                  );
+                }
+
+                // Se esta conta criou uma recorrência nova,
+                // remove também a regra para não deixá-la órfã.
+                if (createdRecurrenceId) {
+                  try {
+                    await rollbackCreatedRecurrence(
+                      createdRecurrenceId
+                    );
+
+                    createdRecurrenceId = null;
+                  } catch (recurrenceRollbackError) {
+                    console.error(
+                      "Erro durante rollback da recorrência da Casa:",
+                      recurrenceRollbackError
+                    );
+                  }
+                }
+
+                throw houseLinkError;
+              }
+            }
+
+      // =====================================
+      // ATUALIZA METADADOS DA CONTA DA CASA
+      // =====================================
+
+      if (
+        sourceModule === "casa" &&
+        transactionToEdit &&
+        houseBillToEdit?.id
+      ) {
+        const { error: houseBillUpdateError } =
+          await supabase
+            .from("house_bills")
+            .update({
+              bill_type:
+                houseBillForm.bill_type,
+
+              provider:
+                houseBillForm.provider.trim() ||
+                null,
+
+              notes:
+                form.notes.trim() || null,
+
+              updated_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "id",
+              houseBillToEdit.id
+            );
+
+        if (houseBillUpdateError) {
+          throw houseBillUpdateError;
         }
       }
 
@@ -1396,7 +1962,10 @@ export default function TransactionModal({
         .insert({
           user_id: user.id,
 
-          module: "Financeiro",
+          module:
+            sourceModule === "casa"
+              ? "Casa"
+              : "Financeiro",
 
           action:
             transactionToEdit
@@ -1422,6 +1991,8 @@ export default function TransactionModal({
                 : totalInstallments >
                   1
                 ? `Criou compra parcelada: ${payload.title} em ${totalInstallments}x`
+                : sourceModule === "casa"
+                ? `Criou conta da casa: ${payload.title}`
                 : `Criou movimentação financeira: ${payload.title}`,
           },
         });
@@ -1510,7 +2081,11 @@ export default function TransactionModal({
                 color: COLORS.ink,
               }}
             >
-              {transactionToEdit
+              {sourceModule === "casa"
+                ? transactionToEdit
+                  ? "Editar conta da casa"
+                  : "Nova conta da casa"
+                : transactionToEdit
                 ? "Editar movimentação"
                 : "Nova movimentação"}
             </div>
@@ -1522,7 +2097,9 @@ export default function TransactionModal({
                 marginTop: 2,
               }}
             >
-              Registre receitas e despesas do Financeiro
+              {sourceModule === "casa"
+                ? "Registre e acompanhe as contas da residência"
+                : "Registre receitas e despesas do Financeiro"}
             </div>
           </div>
 
@@ -1552,27 +2129,100 @@ export default function TransactionModal({
             gap: 12,
           }}
         >
-          <div>
-            <label style={labelStyle}>Tipo</label>
-            <select
-              value={form.type}
-              onChange={(e) => {
-                handleChange("type", e.target.value);
-                handleChange("category_id", "");
+          {sourceModule === "casa" && (
+            <>
+              <div>
+                <label style={labelStyle}>
+                  Tipo da conta
+                </label>
 
-                if (
-                  form.status === "pago" ||
-                  form.status === "recebido"
-                ) {
-                  handleChange("status", "previsto");
-                }
-              }}
-              style={inputStyle}
-            >
-              <option value="despesa">Despesa</option>
-              <option value="receita">Receita</option>
-            </select>
-          </div>
+                <select
+                  value={houseBillForm.bill_type}
+                  onChange={(e) =>
+                    setHouseBillForm((prev) => ({
+                      ...prev,
+                      bill_type: e.target.value,
+                    }))
+                  }
+                  style={inputStyle}
+                >
+                  <option value="energia">
+                    Energia
+                  </option>
+
+                  <option value="agua">
+                    Água
+                  </option>
+
+                  <option value="internet">
+                    Internet
+                  </option>
+
+                  <option value="gas">
+                    Gás
+                  </option>
+
+                  <option value="condominio">
+                    Condomínio
+                  </option>
+
+                  <option value="aluguel">
+                    Aluguel
+                  </option>
+
+                  <option value="financiamento">
+                    Financiamento
+                  </option>
+
+                  <option value="outros">
+                    Outros
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>
+                  Fornecedor / empresa
+                </label>
+
+                <input
+                  value={houseBillForm.provider}
+                  onChange={(e) =>
+                    setHouseBillForm((prev) => ({
+                      ...prev,
+                      provider: e.target.value,
+                    }))
+                  }
+                  placeholder="Ex.: Copel, Sanepar, Vivo..."
+                  style={inputStyle}
+                />
+              </div>
+            </>
+          )}
+          {sourceModule !== "casa" && (
+            <div>
+              <label style={labelStyle}>Tipo</label>
+
+              <select
+                value={form.type}
+                onChange={(e) => {
+                  handleChange("type", e.target.value);
+                  handleChange("category_id", "");
+
+                  if (
+                    form.status === "pago" ||
+                    form.status === "recebido"
+                  ) {
+                    handleChange("status", "previsto");
+                  }
+                }}
+                style={inputStyle}
+              >
+                <option value="despesa">Despesa</option>
+                <option value="receita">Receita</option>
+              </select>
+            </div>
+          )}
 
           <div>
             <label style={labelStyle}>Valor</label>
@@ -1598,24 +2248,39 @@ export default function TransactionModal({
             />
           </div>
 
-          <div>
-            <label style={labelStyle}>Categoria</label>
-            <select
-              value={form.category_id}
-              onChange={(e) =>
-                handleChange("category_id", e.target.value)
-              }
-              style={inputStyle}
-            >
-              <option value="">Sem categoria</option>
+          {sourceModule !== "casa" && (
+            <div>
+              <label style={labelStyle}>
+                Categoria
+              </label>
 
-              {filteredCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
+              <select
+                value={form.category_id}
+                onChange={(e) =>
+                  handleChange(
+                    "category_id",
+                    e.target.value
+                  )
+                }
+                style={inputStyle}
+              >
+                <option value="">
+                  Sem categoria
                 </option>
-              ))}
-            </select>
-          </div>
+
+                {filteredCategories.map(
+                  (category) => (
+                    <option
+                      key={category.id}
+                      value={category.id}
+                    >
+                      {category.name}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+          )}
 
           <div>
             <label style={labelStyle}>Status</label>
@@ -1711,18 +2376,29 @@ export default function TransactionModal({
             </select>
           </div>
 
-          {form.type === "despesa" && form.card_id && (
+          {form.type === "despesa" &&
+            (form.card_id || sourceModule === "casa") && (
             <div>
               <label style={labelStyle}>Parcelamento</label>
 
               <select
                 value={form.installments}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const installments =
+                    Number(e.target.value);
+
                   handleChange(
                     "installments",
-                    Number(e.target.value)
-                  )
-                }
+                    installments
+                  );
+
+                  if (installments > 1) {
+                    handleChange(
+                      "is_recurring",
+                      false
+                    );
+                  }
+                }}
                 style={inputStyle}
                 disabled={hasPaidInstallments}
               >
@@ -1806,9 +2482,12 @@ export default function TransactionModal({
                     <input
                       type="checkbox"
                       checked={form.is_recurring}
-                      disabled={Boolean(
-                        transactionToEdit?.recurrence_id
-                      )}
+                      disabled={
+                        Boolean(
+                          transactionToEdit?.recurrence_id
+                        ) ||
+                        Number(form.installments) > 1
+                      }
                       onChange={(e) =>
                         handleChange(
                           "is_recurring",

@@ -6,6 +6,8 @@ import { COLORS } from "./constants/theme";
 import HomePage from "./pages/home/HomePage";
 import TrashPage from "./pages/Trash/TrashPage";
 import FinancePage from "./pages/finance/FinancePage";
+import HousePage from "./pages/home/HousePage";
+import PetsPage from "./pages/pets/PetsPage";
 
 const pages = {
   home: {
@@ -159,6 +161,10 @@ export default function App() {
             <HomePage currentUser={currentUser} />
           ) : currentPage === "finance" ? (
             <FinancePage currentUser={currentUser} />
+          ) : currentPage === "house" ? (
+            <HousePage currentUser={currentUser} />
+          ) : currentPage === "pets" ? (
+            <PetsPage currentUser={currentUser} />
           ) : currentPage === "trash" ? (
             <TrashPage currentUser={currentUser} />
           ) : (

@@ -1016,6 +1016,12 @@ export default function FinancePage({ currentUser }) {
 
               notes: recurrence.notes || "",
 
+              source_module:
+                recurrence.source_module || "financeiro",
+
+              source_id:
+                recurrence.source_id || null,
+
               category: null,
 
               account:
@@ -1681,7 +1687,10 @@ export default function FinancePage({ currentUser }) {
                 recurrence.notes || null,
 
               source_module:
-                "financeiro",
+                recurrence.source_module || "financeiro",
+
+              source_id:
+                null,
 
               created_by_user_id:
                 user.id,
@@ -1706,7 +1715,9 @@ export default function FinancePage({ currentUser }) {
                 user.id,
 
               module:
-                "Financeiro",
+                recurrence.source_module === "casa"
+                  ? "Casa"
+                  : "Financeiro",
 
               action:
                 "deleted",

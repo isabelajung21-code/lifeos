@@ -26,6 +26,7 @@ import QuickNoteModal from "../../components/modals/QuickNoteModal";
 import ImportantDateModal from "../../components/modals/ImportantDateModal";
 import EventModal from "../../components/modals/EventModal";
 import CalendarModal from "../../components/modals/CalendarModal";
+import TransactionModal from "../../components/modals/TransactionModal";
 
 
 function StatCard({ icon: Icon, label, value, detail }) {
@@ -266,6 +267,18 @@ export default function HomePage({ currentUser }) {
   const [editingEvent, setEditingEvent] = useState(null);
   const [events, setEvents] = useState([]);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [maintenances, setMaintenances] = useState([]);
+  const [houseAssets, setHouseAssets] = useState([]);
+  const [financeTransactions, setFinanceTransactions] = useState([]);
+  const [financeGoals, setFinanceGoals] = useState([]);
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
+  const [pets, setPets] = useState([]);
+  const [petVaccinations, setPetVaccinations] = useState([]);
+  const [petDewormings, setPetDewormings] = useState([]);
+  const [petMedications, setPetMedications] = useState([]);
+  const [petHealthPlans, setPetHealthPlans] = useState([]);
+  const [petAppointments, setPetAppointments] = useState([]);
+
 
   useEffect(() => {
     loadHome();
@@ -293,6 +306,16 @@ export default function HomePage({ currentUser }) {
       notesResult,
       datesResult,
       eventsResult,
+      maintenancesResult,
+      assetsResult,
+      financeTransactionsResult,
+      financeGoalsResult,
+      petsResult,
+      petVaccinationsResult,
+      petDewormingsResult,
+      petMedicationsResult,
+      petHealthPlansResult,
+      petAppointmentsResult,
     ] = await Promise.all([
       supabase
         .from("tasks")
@@ -322,27 +345,179 @@ export default function HomePage({ currentUser }) {
         .eq("owner_user_id", user.id)
         .is("deleted_at", null)
         .order("event_date", { ascending: true }),
+
+      supabase
+        .from("house_maintenances")
+        .select("*")
+        .is("deleted_at", null),
+
+      supabase
+        .from("house_assets")
+        .select("*")
+        .is("deleted_at", null),
+
+      supabase
+        .from("finance_transactions")
+        .select(`
+          id,
+          title,
+          amount,
+          status,
+          due_date,
+          transaction_date,
+          type,
+          source_module,
+          created_by_user_id
+        `)
+        .eq("type", "despesa")
+        .is("deleted_at", null)
+        .neq("status", "pago")
+        .order("due_date", {
+          ascending: true,
+          nullsFirst: false,
+      }),
+
+      supabase
+        .from("finance_goals")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false }),
+
+      supabase
+        .from("pets")
+        .select("*")
+        .is("deleted_at", null),
+
+      supabase
+        .from("pet_vaccinations")
+        .select("*")
+        .is("deleted_at", null),
+
+      supabase
+        .from("pet_deworming")
+        .select("*")
+        .is("deleted_at", null),
+
+      supabase
+        .from("pet_medications")
+        .select("*")
+        .is("deleted_at", null),
+
+      supabase
+        .from("pet_health_plans")
+        .select("*")
+        .is("deleted_at", null),
+
+      supabase
+        .from("pet_appointments")
+        .select("*")
+        .is("deleted_at", null),
     ]);
 
     if (tasksResult.error) console.error(tasksResult.error);
     if (notesResult.error) console.error(notesResult.error);
     if (datesResult.error) console.error(datesResult.error);
     if (eventsResult.error) console.error(eventsResult.error);
+    if (maintenancesResult.error) {console.error(maintenancesResult.error);}
+    if (assetsResult.error) {console.error(assetsResult.error);}
+    if (financeTransactionsResult.error) {
+      console.error(
+        "Erro ao carregar vencimentos:",
+        financeTransactionsResult.error
+      );
+    }
+
+    if (financeGoalsResult.error) {
+      console.error(
+        "Erro ao carregar metas financeiras:",
+        financeGoalsResult.error
+      );
+    }
 
     setTasks(tasksResult.data || []);
     setNotes(notesResult.data || []);
     setImportantDates(datesResult.data || []);
     setEvents(eventsResult.data || []);
+    setMaintenances(maintenancesResult.data || []);
+    setHouseAssets(assetsResult.data || []);
+    setFinanceTransactions(financeTransactionsResult.data || []);
+    setFinanceGoals(financeGoalsResult.data || []);
+
+    if (petsResult.error) {
+      console.error("Erro ao carregar pets:", petsResult.error);
+    }
+
+    if (petVaccinationsResult.error) {
+      console.error(
+        "Erro ao carregar vacinas:",
+        petVaccinationsResult.error
+      );
+    }
+
+    if (petDewormingsResult.error) {
+      console.error(
+        "Erro ao carregar vermífugos:",
+        petDewormingsResult.error
+      );
+    }
+
+    if (petMedicationsResult.error) {
+      console.error(
+        "Erro ao carregar medicamentos:",
+        petMedicationsResult.error
+      );
+    }
+
+    if (petHealthPlansResult.error) {
+      console.error(
+        "Erro ao carregar planos dos pets:",
+        petHealthPlansResult.error
+      );
+    }
+
+    if (petAppointmentsResult.error) {
+      console.error(
+        "Erro ao carregar atendimentos:",
+        petAppointmentsResult.error
+      );
+    }
+
+    setPets(petsResult.data || []);
+    setPetVaccinations(
+      petVaccinationsResult.data || []
+    );
+    setPetDewormings(
+      petDewormingsResult.data || []
+    );
+    setPetMedications(
+      petMedicationsResult.data || []
+    );
+    setPetHealthPlans(
+      petHealthPlansResult.data || []
+    );
+    setPetAppointments(
+      petAppointmentsResult.data || []
+    );
 
     setLoading(false);
   }
 
   const today = new Date();
-  const todayISO = today.toISOString().slice(0, 10);
+
+  function toLocalISODate(date) {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+  }
+
+  const todayISO = toLocalISODate(today);
 
   const weekEnd = new Date(today);
   weekEnd.setDate(today.getDate() + 7);
-  const weekEndISO = weekEnd.toISOString().slice(0, 10);
+
+  const weekEndISO = toLocalISODate(weekEnd);
 
   const completed = tasks.filter(
     (task) => task.status === "concluida"
@@ -379,6 +554,39 @@ export default function HomePage({ currentUser }) {
     
   });
 
+  const homeGoals = (financeGoals || [])
+    .map((goal) => {
+      const target = Number(goal.target_value || 0);
+      const current = Number(goal.current_value || 0);
+
+      const progress =
+        target > 0
+          ? Math.min((current / target) * 100, 100)
+          : 0;
+
+      return {
+        ...goal,
+        target,
+        current,
+        progress,
+        completed:
+          progress >= 100 ||
+          goal.status === "concluida",
+      };
+    })
+    .filter((goal) => !goal.completed)
+    .sort((a, b) => {
+      if (a.target_date && b.target_date) {
+        return a.target_date.localeCompare(b.target_date);
+      }
+
+      if (a.target_date) return -1;
+      if (b.target_date) return 1;
+
+      return b.progress - a.progress;
+    })
+    .slice(0, 3);
+
   const priorities = pending
     .filter(
       (task) =>
@@ -387,29 +595,555 @@ export default function HomePage({ currentUser }) {
     )
     .slice(0, 5);
 
+  const upcomingPayments = (financeTransactions || [])
+    .filter((transaction) => {
+      const date =
+        transaction.due_date ||
+        transaction.transaction_date;
+
+      return (
+        date &&
+        transaction.status !== "pago" &&
+        transaction.status !== "cancelado"
+      );
+    })
+    .map((transaction) => ({
+      ...transaction,
+      paymentDate:
+        transaction.due_date ||
+        transaction.transaction_date,
+    }))
+    .sort((a, b) =>
+      a.paymentDate.localeCompare(b.paymentDate)
+    )
+    .slice(0, 5);
+
+  const maintenanceAttentionItems = (
+    maintenances || []
+  )
+    .filter(
+      (maintenance) =>
+        !maintenance.deleted_at &&
+        maintenance.status !== "concluida" &&
+        maintenance.next_maintenance_date
+    )
+    .map((maintenance) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const dueDate = new Date(
+        `${maintenance.next_maintenance_date}T12:00:00`
+      );
+      dueDate.setHours(0, 0, 0, 0);
+
+      const diffDays = Math.ceil(
+        (dueDate - today) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      if (diffDays < 0) {
+        return {
+          id: `maintenance-${maintenance.id}`,
+          text: maintenance.title,
+          daysUntil: diffDays,
+          detail:
+            Math.abs(diffDays) === 1
+              ? "Manutenção atrasada há 1 dia"
+              : `Manutenção atrasada há ${Math.abs(diffDays)} dias`,
+          type: "danger",
+        };
+      }
+
+      if (diffDays === 0) {
+        return {
+          id: `maintenance-${maintenance.id}`,
+          text: maintenance.title,
+          daysUntil: diffDays,
+          detail: "Manutenção vence hoje",
+          type: "danger",
+        };
+      }
+
+      if (diffDays <= 7) {
+        return {
+          id: `maintenance-${maintenance.id}`,
+          text: maintenance.title,
+          daysUntil: diffDays,
+          detail:
+            diffDays === 1
+              ? "Manutenção vence amanhã"
+              : `Manutenção vence em ${diffDays} dias`,
+          type: "warning",
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
+  const warrantyAttentionItems = (
+    houseAssets || []
+  )
+    .filter(
+      (asset) =>
+        asset.warranty_until &&
+        asset.status !== "vendido" &&
+        asset.status !== "descartado"
+    )
+    .map((asset) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const warrantyDate = new Date(
+        `${asset.warranty_until}T12:00:00`
+      );
+      warrantyDate.setHours(0, 0, 0, 0);
+
+      const diffDays = Math.ceil(
+        (warrantyDate - today) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      if (diffDays < 0) {
+        return null;
+      }
+
+      if (diffDays === 0) {
+        return {
+          id: `warranty-${asset.id}`,
+          text: asset.name,
+          detail: "Garantia vence hoje",
+          type: "danger",
+          daysUntil: diffDays,
+        };
+      }
+
+      if (diffDays <= 30) {
+        return {
+          id: `warranty-${asset.id}`,
+          text: asset.name,
+          detail:
+            diffDays === 1
+              ? "Garantia vence amanhã"
+              : `Garantia vence em ${diffDays} dias`,
+          type: "warning",
+          daysUntil: diffDays,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
+  function getPetName(petId) {
+    return (
+      pets.find((pet) => pet.id === petId)?.name ||
+      "Pet"
+    );
+  }
+
+  function getDaysUntil(dateString) {
+    if (!dateString) return null;
+
+    const current = new Date();
+    current.setHours(0, 0, 0, 0);
+
+    const target = new Date(
+      `${dateString}T12:00:00`
+    );
+    target.setHours(0, 0, 0, 0);
+
+    return Math.round(
+      (target - current) /
+        (1000 * 60 * 60 * 24)
+    );
+  }
+
+  const petVaccineAttentionItems =
+    (petVaccinations || [])
+      .filter((item) => item.next_due_date)
+      .map((item) => {
+        const days = getDaysUntil(
+          item.next_due_date
+        );
+
+        if (days === null || days > 30) {
+          return null;
+        }
+
+        const petName = getPetName(
+          item.pet_id
+        );
+
+        if (days < 0) {
+          return {
+            id: `pet-vaccine-${item.id}`,
+            text: `${petName} • ${item.vaccine_name}`,
+            detail:
+              Math.abs(days) === 1
+                ? "Vacina atrasada há 1 dia"
+                : `Vacina atrasada há ${Math.abs(
+                    days
+                  )} dias`,
+            type: "danger",
+            daysUntil: days,
+          };
+        }
+
+        if (days === 0) {
+          return {
+            id: `pet-vaccine-${item.id}`,
+            text: `${petName} • ${item.vaccine_name}`,
+            detail: "Vacina vence hoje",
+            type: "danger",
+            daysUntil: days,
+          };
+        }
+
+        return {
+          id: `pet-vaccine-${item.id}`,
+          text: `${petName} • ${item.vaccine_name}`,
+          detail:
+            days === 1
+              ? "Vacina vence amanhã"
+              : `Vacina vence em ${days} dias`,
+          type: "warning",
+          daysUntil: days,
+        };
+      })
+      .filter(Boolean);
+
+  const petPlanAttentionItems =
+    (petHealthPlans || [])
+      .filter(
+        (item) =>
+          item.is_active &&
+          item.limits_renewal_date
+      )
+      .map((item) => {
+        const days = getDaysUntil(
+          item.limits_renewal_date
+        );
+
+        if (days === null || days > 30) {
+          return null;
+        }
+
+        const petName = getPetName(
+          item.pet_id
+        );
+
+        if (days < 0) {
+          return {
+            id: `pet-plan-${item.id}`,
+            text: `${petName} • Plano de saúde`,
+            detail:
+              "Renovação dos limites está vencida",
+            type: "danger",
+            daysUntil: days,
+          };
+        }
+
+        if (days === 0) {
+          return {
+            id: `pet-plan-${item.id}`,
+            text: `${petName} • Plano de saúde`,
+            detail:
+              "Limites do plano renovam hoje",
+            type: "warning",
+            daysUntil: days,
+          };
+        }
+
+        return {
+          id: `pet-plan-${item.id}`,
+          text: `${petName} • Plano de saúde`,
+          detail:
+            days === 1
+              ? "Limites renovam amanhã"
+              : `Limites renovam em ${days} dias`,
+          type: "warning",
+          daysUntil: days,
+        };
+      })
+      .filter(Boolean);
+
+  const petAppointmentAttentionItems =
+    (petAppointments || [])
+      .filter((item) => {
+        if (!item.appointment_date) {
+          return false;
+        }
+
+        const days = getDaysUntil(
+          item.appointment_date
+        );
+
+        return days >= 0 && days <= 7;
+      })
+      .map((item) => {
+        const days = getDaysUntil(
+          item.appointment_date
+        );
+
+        const petName = getPetName(
+          item.pet_id
+        );
+
+        return {
+          id: `pet-appointment-${item.id}`,
+          text: `${petName} • ${
+            item.appointment_type ||
+            "Atendimento"
+          }`,
+          detail:
+            days === 0
+              ? "Atendimento hoje"
+              : days === 1
+              ? "Atendimento amanhã"
+              : `Atendimento em ${days} dias`,
+          type:
+            days === 0
+              ? "danger"
+              : "warning",
+          daysUntil: days,
+        };
+      });
+
+  const petMedicationAttentionItems =
+    (petMedications || [])
+      .filter((item) => {
+        if (item.is_continuous) {
+          return true;
+        }
+
+        if (!item.end_date) {
+          return false;
+        }
+
+        const days = getDaysUntil(
+          item.end_date
+        );
+
+        return days >= 0 && days <= 7;
+      })
+      .map((item) => {
+        const petName = getPetName(
+          item.pet_id
+        );
+
+        if (item.is_continuous) {
+          return {
+            id: `pet-medication-${item.id}`,
+            text: `${petName} • ${item.medication_name}`,
+            detail: item.frequency
+              ? `Medicamento contínuo • ${item.frequency}`
+              : "Medicamento de uso contínuo",
+            type: "warning",
+            daysUntil: 7,
+          };
+        }
+
+        const days = getDaysUntil(
+          item.end_date
+        );
+
+        return {
+          id: `pet-medication-${item.id}`,
+          text: `${petName} • ${item.medication_name}`,
+          detail:
+            days === 0
+              ? "Tratamento termina hoje"
+              : days === 1
+              ? "Tratamento termina amanhã"
+              : `Tratamento termina em ${days} dias`,
+          type: "warning",
+          daysUntil: days,
+        };
+      });
+
+  const currentMonth =
+    today.getMonth() + 1;
+
+  const petDewormingAttentionItems =
+    (petDewormings || [])
+      .filter(
+        (item) =>
+          Number(item.recurrence_month) ===
+          currentMonth
+      )
+      .map((item) => {
+        const petName = getPetName(
+          item.pet_id
+        );
+
+        return {
+          id: `pet-deworming-${item.id}`,
+          text: `${petName} • Vermífugo`,
+          detail: item.medication_name
+            ? `Vermífugo do mês • ${item.medication_name}`
+            : "Vermífugo programado para este mês",
+          type: "warning",
+          daysUntil: 15,
+        };
+      });
+
   const attentionItems = [
+    // Tarefas atrasadas
     ...overdue.map((task) => ({
       id: `overdue-${task.id}`,
       text: task.title,
       detail: "Tarefa atrasada",
       type: "danger",
+
+      urgency: 1,
+      urgencyDate: task.due_date || "9999-12-31",
+      urgencyOrder: task.due_date || "9999-12-31",
     })),
 
+    // Tarefas importantes que vencem hoje
     ...todayTasks
-      .filter((task) => task.priority === "alta" || task.priority === "urgente")
+      .filter(
+        (task) =>
+          task.priority === "alta" ||
+          task.priority === "urgente"
+      )
       .map((task) => ({
         id: `today-${task.id}`,
         text: task.title,
         detail: "Prioridade para hoje",
         type: "warning",
+
+        urgency: 2,
+        urgencyDate: task.due_date || todayISO,
+        urgencyOrder: task.due_date || "9999-12-31",
       })),
-  ].slice(0, 6);
+
+    // Manutenções
+    ...maintenanceAttentionItems.map(
+      (item) => ({
+        ...item,
+
+        urgency:
+          item.type === "danger"
+            ? 1
+            : 3,
+
+        urgencyOrder:
+          item.daysUntil ?? 9999,
+      })
+    ),
+
+    // Garantias
+    ...warrantyAttentionItems.map(
+      (item) => ({
+        ...item,
+
+        urgency:
+          item.type === "danger"
+            ? 2
+            : 4,
+
+        urgencyOrder:
+          item.daysUntil ?? 9999,
+      })
+    ),
+    // Pets — vacinas
+  ...petVaccineAttentionItems.map(
+    (item) => ({
+      ...item,
+      urgency:
+        item.type === "danger" ? 1 : 3,
+      urgencyOrder:
+        item.daysUntil ?? 9999,
+    })
+  ),
+
+  // Pets — plano de saúde
+  ...petPlanAttentionItems.map(
+    (item) => ({
+      ...item,
+      urgency:
+        item.type === "danger" ? 1 : 4,
+      urgencyOrder:
+        item.daysUntil ?? 9999,
+    })
+  ),
+
+  // Pets — consultas e atendimentos
+  ...petAppointmentAttentionItems.map(
+    (item) => ({
+      ...item,
+      urgency:
+        item.daysUntil === 0 ? 1 : 3,
+      urgencyOrder:
+        item.daysUntil ?? 9999,
+    })
+  ),
+
+  // Pets — medicamentos
+  ...petMedicationAttentionItems.map(
+    (item) => ({
+      ...item,
+      urgency: 4,
+      urgencyOrder:
+        item.daysUntil ?? 9999,
+    })
+  ),
+
+  // Pets — vermífugo
+  ...petDewormingAttentionItems.map(
+    (item) => ({
+      ...item,
+      urgency: 4,
+      urgencyOrder:
+        item.daysUntil ?? 9999,
+    })
+  ),
+  ]
+    .sort((a, b) => {
+      if (a.urgency !== b.urgency) {
+        return a.urgency - b.urgency;
+      }
+
+      if (
+        typeof a.urgencyOrder === "number" &&
+        typeof b.urgencyOrder === "number"
+      ) {
+        return a.urgencyOrder - b.urgencyOrder;
+      }
+
+      return String(a.urgencyOrder).localeCompare(
+        String(b.urgencyOrder)
+      );
+    })
+    .slice(0, 6);
+
 
   function formatDate(date) {
     return new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit",
       month: "short",
     }).format(new Date(`${date}T12:00:00`));
+  }
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(Number(value || 0));
+  }
+
+  function getPaymentDateLabel(date) {
+    if (date < todayISO) {
+      return `Atrasado • ${formatDate(date)}`;
+    }
+
+    if (date === todayISO) {
+      return "Vence hoje";
+    }
+
+    return `Vence em ${formatDate(date)}`;
   }
 
   function getGreeting() {
@@ -669,7 +1403,36 @@ async function deleteEvent(event) {
             />
           </div>
 
-          <div style={{ marginTop: 18 }}>
+          <div style={{ marginTop: 18}}>
+            <SectionCard title="Ações rápidas" icon={Plus}>
+            <div className="quick-actions">
+              {[
+                { label: "Nova tarefa", action: () => {setEditingTask(null); setTaskModalOpen(true) }},
+                {label: "Nova despesa",action: () => setTransactionModalOpen(true),},
+                { label: "Novo projeto" },
+                { label: "Novo evento", action: () => {setEditingEvent(null); setEventModalOpen(true) }},
+                { label: "Nova anotação", action: () => setNoteModalOpen(true) },
+                { label: "Nova data", action: () => {setEditingDate(null); setDateModalOpen(true) }},
+                ].map((item) => (
+                <button
+                    key={item.label}
+                    onClick={item.action}
+                    style={{
+                    border: `1px solid ${COLORS.border}`,
+                    background: COLORS.bg,
+                    color: COLORS.ink,
+                    borderRadius: 10,
+                     padding: "11px 15px",
+                    fontWeight: 600,
+                    fontSize: 12,
+                    }}
+                >
+    + {item.label}
+  </button>
+))}
+                
+            </div>
+          </SectionCard>
             <SectionCard
               title="O que precisa da minha atenção hoje?"
               icon={AlertTriangle}
@@ -682,6 +1445,7 @@ async function deleteEvent(event) {
                     padding: 14,
                     color: COLORS.success,
                     fontSize: 13,
+                    
                   }}
                 >
                   Tudo certo por aqui. Nenhuma pendência urgente no momento.
@@ -870,16 +1634,171 @@ async function deleteEvent(event) {
               title="Próximos vencimentos"
               icon={CircleDollarSign}
             >
-              <EmptyState>
-                Os vencimentos aparecerão aqui quando construirmos o
-                Financeiro.
-              </EmptyState>
+              {upcomingPayments.length === 0 ? (
+                <EmptyState>
+                  Nenhum vencimento pendente.
+                </EmptyState>
+              ) : (
+                upcomingPayments.map((transaction) => {
+                  const overdue =
+                    transaction.paymentDate < todayISO;
+
+                  const dueToday =
+                    transaction.paymentDate === todayISO;
+
+                  return (
+                    <div
+                      key={transaction.id}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "11px 0",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                      }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: COLORS.ink,
+                          }}
+                        >
+                          {transaction.title}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 11,
+                            color: overdue
+                              ? COLORS.danger
+                              : dueToday
+                              ? COLORS.warning
+                              : COLORS.inkSoft,
+                            fontWeight:
+                              overdue || dueToday
+                                ? 600
+                                : 400,
+                          }}
+                        >
+                          {getPaymentDateLabel(
+                            transaction.paymentDate
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          flexShrink: 0,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: overdue
+                            ? COLORS.danger
+                            : COLORS.ink,
+                        }}
+                      >
+                        {formatCurrency(transaction.amount)}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </SectionCard>
 
             <SectionCard title="Metas e progresso" icon={Target}>
-              <EmptyState>
-                Suas metas aparecerão aqui conforme forem cadastradas.
-              </EmptyState>
+              {homeGoals.length === 0 ? (
+                <EmptyState>
+                  Nenhuma meta financeira em andamento.
+                </EmptyState>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 16,
+                  }}
+                >
+                  {homeGoals.map((goal) => (
+                    <div key={goal.id}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: COLORS.ink,
+                            minWidth: 0,
+                          }}
+                        >
+                          {goal.title}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: COLORS.primaryDark,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {goal.progress.toFixed(0)}%
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          height: 7,
+                          borderRadius: 999,
+                          background: COLORS.primaryLight,
+                          overflow: "hidden",
+                          marginTop: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${goal.progress}%`,
+                            height: "100%",
+                            background: COLORS.primary,
+                            borderRadius: 999,
+                          }}
+                        />
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 7,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          fontSize: 10.5,
+                          color: COLORS.inkSoft,
+                        }}
+                      >
+                        <span>
+                          {formatCurrency(goal.current)}
+                          {" de "}
+                          {formatCurrency(goal.target)}
+                        </span>
+
+                        {goal.target_date && (
+                          <span>
+                            até {formatDate(goal.target_date)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </SectionCard>
 
             <SectionCard
@@ -1095,35 +2014,7 @@ async function deleteEvent(event) {
             </SectionCard>
           </div>
 
-          <SectionCard title="Ações rápidas" icon={Plus}>
-            <div className="quick-actions">
-              {[
-                { label: "Nova tarefa", action: () => {setEditingTask(null); setTaskModalOpen(true) }},
-                { label: "Nova despesa" },
-                { label: "Novo projeto" },
-                { label: "Novo evento", action: () => {setEditingEvent(null); setEventModalOpen(true) }},
-                { label: "Nova anotação", action: () => setNoteModalOpen(true) },
-                { label: "Nova data", action: () => {setEditingDate(null); setDateModalOpen(true) }},
-                ].map((item) => (
-                <button
-                    key={item.label}
-                    onClick={item.action}
-                    style={{
-                    border: `1px solid ${COLORS.border}`,
-                    background: COLORS.bg,
-                    color: COLORS.ink,
-                    borderRadius: 10,
-                     padding: "11px 15px",
-                    fontWeight: 600,
-                    fontSize: 12,
-                    }}
-                >
-    + {item.label}
-  </button>
-))}
-                
-            </div>
-          </SectionCard>
+          
           <TaskModal
             open={taskModalOpen}
             taskToEdit={editingTask}
@@ -1159,6 +2050,18 @@ async function deleteEvent(event) {
             onClose={() => {
               setEventModalOpen(false);
               setEditingEvent(null);
+            }}
+          />
+
+          <TransactionModal
+            open={transactionModalOpen}
+            currentUser={currentUser}
+            initialType="despesa"
+            sourceModule="financeiro"
+            transactionToEdit={null}
+            onSaved={loadHome}
+            onClose={() => {
+              setTransactionModalOpen(false);
             }}
           />
 
