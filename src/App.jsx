@@ -19,6 +19,7 @@ import JournalPage from "./pages/journal/JournalPage";
 import StudiesPage from "./pages/studies/StudiesPage";
 import ContentPage from "./pages/content/ContentPage";
 import EntertainmentPage from "./pages/entertainment/EntertainmentPage";
+import HealthPage from "./pages/health/HealthPage";
 
 
 
@@ -34,6 +35,10 @@ const pages = {
   habits: {
     title: "Hábitos e Rotinas",
     description: "Acompanhe suas rotinas e sua constância.",
+  },
+  health: {
+    title: "Saúde",
+    description: "Saúde, bem-estar e performance.",
   },
   agenda: {
     title: "Agenda",
@@ -187,11 +192,16 @@ export default function App() {
         >
           
           {currentPage === "home" ? (
-            <HomePage currentUser={currentUser} />
+            <HomePage
+              currentUser={currentUser}
+              onNavigate={setCurrentPage}
+            />
           ) : currentPage === "inbox" ? (
             <InboxPage currentUser={currentUser} />
           ) : currentPage === "habits" ? (
             <HabitsPage currentUser={currentUser} />
+          ) : currentPage === "health" ? (
+            <HealthPage currentUser={currentUser} />
           ) : currentPage === "agenda" ? (
             <AgendaPage currentUser={currentUser} />
           ) : currentPage === "journal" ? (

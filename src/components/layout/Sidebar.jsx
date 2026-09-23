@@ -15,6 +15,7 @@ import {
   FileText,
   Bell,
   BookHeart,
+  HeartPulse,
   Trash2
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const items = [
   { id: "agenda", label: "Agenda", icon: CalendarDays },
   { id: "inbox", label: "Caixa de Entrada", icon: Inbox },
   { id: "habits", label: "Hábitos e Rotinas", icon: Repeat2 },
+  { id: "health", label: "Saúde", icon: HeartPulse },
   { id: "journal", label: "Diário", icon: BookHeart },
   { id: "lists", label: "Listas", icon: ListChecks },
   { id: "documents", label: "Documentos", icon: FileText },

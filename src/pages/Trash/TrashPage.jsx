@@ -6,6 +6,7 @@ import { COLORS } from "../../constants/theme";
 export default function TrashPage({ currentUser }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [emptying, setEmptying] = useState(false);
 
   useEffect(() => {
     loadTrash();
@@ -248,6 +249,7 @@ export default function TrashPage({ currentUser }) {
         entertainmentProgressResult,
         visibleListsResult,
         deletedListsResult,
+        workDemandsResult,
       ] = await Promise.all([
         supabase.from("inbox_items").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
         supabase.from("habits").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
@@ -266,6 +268,7 @@ export default function TrashPage({ currentUser }) {
         supabase.from("entertainment_progress").select("*").not("deleted_at", "is", null),
         supabase.from("lists").select("id, title, owner_user_id, visibility").or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
         supabase.from("lists").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
+        supabase.from("work_demands").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
       ]);
 
       const extraResults = [
@@ -274,6 +277,7 @@ export default function TrashPage({ currentUser }) {
         studySessionsResult, studyMaterialsResult, contentItemsResult,
         contentPillarsResult, contentMetricsResult, entertainmentItemsResult,
         entertainmentProgressResult, visibleListsResult, deletedListsResult,
+        workDemandsResult,
       ];
 
       const extraError = extraResults.find((result) => result.error)?.error;
@@ -684,6 +688,13 @@ export default function TrashPage({ currentUser }) {
         listTitle: listMap.get(item.list_id) || "Lista",
       }));
 
+      const workDemands = (workDemandsResult.data || []).map((item) => ({
+        ...item,
+        type: "work_demand",
+        title: item.title || "Demanda de trabalho",
+        module: "Trabalho",
+      }));
+
       const all = [
         ...tasks,
         ...notes,
@@ -728,6 +739,7 @@ export default function TrashPage({ currentUser }) {
         ...entertainmentProgress,
         ...deletedLists,
         ...listItems,
+        ...workDemands,
       ].sort(
         (a, b) =>
           new Date(b.deleted_at) - new Date(a.deleted_at)
@@ -787,6 +799,7 @@ export default function TrashPage({ currentUser }) {
       content_metric: "content_metrics",
       entertainment_item: "entertainment_items",
       entertainment_progress: "entertainment_progress",
+      work_demand: "work_demands",
     };
 
     return tables[type];
@@ -846,6 +859,7 @@ export default function TrashPage({ currentUser }) {
       content_metric: "Métricas de conteúdo",
       entertainment_item: "Livro, filme ou série",
       entertainment_progress: "Progresso de entretenimento",
+      work_demand: "Demanda de trabalho",
     };
 
     return labels[item.type] || "Item";
@@ -980,6 +994,7 @@ export default function TrashPage({ currentUser }) {
         "content_pillar",
         "content_metric",
         "entertainment_item",
+        "work_demand",
       ];
 
       if (typesWithUpdatedAt.includes(item.type)) {
@@ -1501,7 +1516,10 @@ export default function TrashPage({ currentUser }) {
     }
   }
 
-  async function permanentlyDeleteProject(item) {
+  async function permanentlyDeleteProject(
+    item,
+    { reload = true, notify = true } = {}
+  ) {
     try {
       // ==========================================
       // 1. PRESERVA TAREFAS
@@ -1551,39 +1569,51 @@ export default function TrashPage({ currentUser }) {
       // - project_decisions
       // - project_risks
 
-      await loadTrash();
+      if (reload) await loadTrash();
 
-      alert("Projeto excluído definitivamente.");
+      if (notify) alert("Projeto excluído definitivamente.");
     } catch (error) {
       console.error(
         "Erro ao excluir projeto definitivamente:",
         error
       );
 
-      alert(
-        "Não foi possível excluir o projeto definitivamente."
-      );
+      if (notify) {
+        alert(
+          "Não foi possível excluir o projeto definitivamente."
+        );
+      }
+
+      return false;
     }
+
+    return true;
   }
 
-  async function deleteForever(item) {
-    const confirmed = window.confirm(
-      `Excluir definitivamente "${item.title}"? Essa ação não pode ser desfeita.`
-    );
+  async function deleteForever(
+    item,
+    { skipConfirmation = false, reload = true, notify = true } = {}
+  ) {
+    const confirmed =
+      skipConfirmation ||
+      window.confirm(
+        `Excluir definitivamente "${item.title}"? Essa ação não pode ser desfeita.`
+      );
 
     if (!confirmed) return;
 
     if (item.type === "project") {
-      const confirmed = window.confirm(
-        `Excluir definitivamente o projeto "${item.title}"?\n\n` +
-          "Essa ação não pode ser desfeita.\n\n" +
-          "As tarefas e movimentações financeiras serão preservadas, mas deixarão de estar vinculadas ao projeto."
-      );
+      const confirmed =
+        skipConfirmation ||
+        window.confirm(
+          `Excluir definitivamente o projeto "${item.title}"?\n\n` +
+            "Essa ação não pode ser desfeita.\n\n" +
+            "As tarefas e movimentações financeiras serão preservadas, mas deixarão de estar vinculadas ao projeto."
+        );
 
       if (!confirmed) return;
 
-      await permanentlyDeleteProject(item);
-      return;
+      return permanentlyDeleteProject(item, { reload, notify });
     }
 
 
@@ -1637,8 +1667,8 @@ export default function TrashPage({ currentUser }) {
           },
         });
 
-        await loadTrash();
-        return;
+        if (reload) await loadTrash();
+        return true;
       }
 
       if (item.type === "finance_subscription") {
@@ -1699,9 +1729,9 @@ export default function TrashPage({ currentUser }) {
             },
           });
 
-        await loadTrash();
+        if (reload) await loadTrash();
 
-        return;
+        return true;
       }
 
       // =====================================
@@ -1889,9 +1919,9 @@ export default function TrashPage({ currentUser }) {
             },
           });
 
-        await loadTrash();
+        if (reload) await loadTrash();
 
-        return;
+        return true;
       }
 
       // =====================================
@@ -1961,15 +1991,69 @@ export default function TrashPage({ currentUser }) {
           },
         });
 
-      await loadTrash();
+      if (reload) await loadTrash();
+      return true;
     } catch (error) {
       console.error(
         "Erro ao excluir definitivamente:",
         error
       );
 
+      if (notify) {
+        alert(
+          "Não foi possível excluir definitivamente."
+        );
+      }
+
+      return false;
+    }
+  }
+
+  async function emptyTrash() {
+    if (items.length === 0 || emptying) return;
+
+    const confirmed = window.confirm(
+      `Esvaziar a Lixeira e excluir definitivamente ${items.length} item(ns)?\n\nEssa ação não pode ser desfeita.`
+    );
+
+    if (!confirmed) return;
+
+    setEmptying(true);
+
+    const parentTypes = new Set([
+      "project",
+      "finance_account",
+      "finance_card",
+      "finance_subscription",
+      "list",
+      "entertainment_item",
+      "study_course",
+      "content_pillar",
+    ]);
+
+    const orderedItems = [
+      ...items.filter((item) => !parentTypes.has(item.type)),
+      ...items.filter((item) => parentTypes.has(item.type)),
+    ];
+
+    let failed = 0;
+
+    for (const item of orderedItems) {
+      const deleted = await deleteForever(item, {
+        skipConfirmation: true,
+        reload: false,
+        notify: false,
+      });
+
+      if (!deleted) failed += 1;
+    }
+
+    await loadTrash();
+    setEmptying(false);
+
+    if (failed > 0) {
       alert(
-        "Não foi possível excluir definitivamente."
+        `${failed} item(ns) não puderam ser excluídos. Os demais foram removidos definitivamente.`
       );
     }
   }
@@ -1998,28 +2082,64 @@ export default function TrashPage({ currentUser }) {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
-        <h1
+      <div
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1
           style={{
             margin: 0,
             color: COLORS.ink,
             fontSize: 20,
             letterSpacing: "-0.3px",
           }}
-        >
-          Lixeira
-        </h1>
+          >
+            Lixeira
+          </h1>
 
-        <p
+          <p
           style={{
             color: COLORS.inkSoft,
             marginTop: 4,
             fontSize: 12,
           }}
-        >
-          Os itens permanecem aqui por até 30 dias antes da exclusão
-          definitiva.
-        </p>
+          >
+            Os itens permanecem aqui por até 30 dias antes da exclusão
+            definitiva.
+          </p>
+        </div>
+
+        {items.length > 0 && (
+          <button
+            type="button"
+            onClick={emptyTrash}
+            disabled={emptying}
+            style={{
+              border: `1px solid ${COLORS.danger}`,
+              borderRadius: 9,
+              background: COLORS.surface,
+              color: COLORS.danger,
+              padding: "8px 11px",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              cursor: emptying ? "wait" : "pointer",
+              fontSize: 11,
+              fontWeight: 700,
+              opacity: emptying ? 0.65 : 1,
+            }}
+          >
+            <Trash2 size={14} />
+            {emptying ? "Esvaziando..." : "Esvaziar Lixeira"}
+          </button>
+        )}
       </div>
 
       {items.length === 0 ? (

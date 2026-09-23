@@ -10,6 +10,8 @@ import {
   StickyNote,
   Target,
   ListTodo,
+  HeartPulse,
+  X,
 } from "lucide-react";
 
 import { supabase } from "../../services/supabase";
@@ -40,15 +42,21 @@ import HomeEntertainmentCard from "./HomeEntertainmentCard";
 
 
 
-function StatCard({ icon: Icon, label, value, detail }) {
+function StatCard({ icon: Icon, label, value, detail, onClick }) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
       style={{
+        width: "100%",
         background: COLORS.surface,
         border: `1px solid ${COLORS.border}`,
         borderRadius: 12,
         padding: 14,
         minWidth: 0,
+        textAlign: "left",
+        fontFamily: "inherit",
+        cursor: onClick ? "pointer" : "default",
       }}
     >
       <div
@@ -99,7 +107,7 @@ function StatCard({ icon: Icon, label, value, detail }) {
           {detail}
         </div>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -262,7 +270,7 @@ const taskActionButtonStyle = {
   padding: 0,
 };
 
-export default function HomePage({ currentUser }) {
+export default function HomePage({ currentUser, onNavigate }) {
   const [userId, setUserId] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -270,6 +278,7 @@ export default function HomePage({ currentUser }) {
   const [loading, setLoading] = useState(true);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [taskListFilter, setTaskListFilter] = useState(null);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
@@ -608,6 +617,29 @@ export default function HomePage({ currentUser }) {
       task.due_date >= todayISO &&
       task.due_date <= weekEndISO
   );
+
+  const taskLists = {
+    completed: {
+      title: "Tarefas concluídas",
+      items: completed,
+    },
+    pending: {
+      title: "Tarefas pendentes",
+      items: pending,
+    },
+    overdue: {
+      title: "Tarefas atrasadas",
+      items: overdue,
+    },
+    week: {
+      title: "Tarefas dos próximos 7 dias",
+      items: weekTasks,
+    },
+  };
+
+  const selectedTaskList = taskListFilter
+    ? taskLists[taskListFilter]
+    : null;
 
   const weekEvents = events.filter((event) => {
     if (!event.event_date) return false;
@@ -1624,6 +1656,23 @@ async function deleteEvent(event) {
                   setNoteModalOpen(true);
                 },
               },
+                            {
+                label: "Check-in",
+                icon: HeartPulse,
+                action: () => {
+                  sessionStorage.setItem(
+                    "lifeos-health-tab",
+                    "Check-in"
+                  );
+
+                  sessionStorage.setItem(
+                    "lifeos-open-today-checkin",
+                    "true"
+                  );
+
+                  onNavigate?.("health");
+                },
+              },
               {
                 label: "Data",
                 icon: Plus,
@@ -1654,6 +1703,7 @@ async function deleteEvent(event) {
               label="Concluídas"
               value={completed.length}
               detail="tarefas"
+              onClick={() => setTaskListFilter("completed")}
             />
 
             <StatCard
@@ -1661,6 +1711,7 @@ async function deleteEvent(event) {
               label="Pendentes"
               value={pending.length}
               detail="tarefas"
+              onClick={() => setTaskListFilter("pending")}
             />
 
             <StatCard
@@ -1668,6 +1719,7 @@ async function deleteEvent(event) {
               label="Atrasadas"
               value={overdue.length}
               detail="precisam de atenção"
+              onClick={() => setTaskListFilter("overdue")}
             />
 
             <StatCard
@@ -1675,6 +1727,7 @@ async function deleteEvent(event) {
               label="Próximos 7 dias"
               value={weekTasks.length}
               detail="tarefas programadas"
+              onClick={() => setTaskListFilter("week")}
             />
           </div>
 
@@ -2374,6 +2427,93 @@ async function deleteEvent(event) {
           </div>
 
           
+          {selectedTaskList && (
+            <div
+              onClick={() => setTaskListFilter(null)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 1100,
+                background: "rgba(15, 23, 42, 0.38)",
+                display: "grid",
+                placeItems: "center",
+                padding: 16,
+              }}
+            >
+              <div
+                onClick={(event) => event.stopPropagation()}
+                style={{
+                  width: "min(620px, 100%)",
+                  maxHeight: "min(680px, 85vh)",
+                  overflowY: "auto",
+                  background: COLORS.surface,
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 14,
+                  padding: 16,
+                  boxShadow: "0 18px 55px rgba(15, 23, 42, 0.18)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    marginBottom: 8,
+                  }}
+                >
+                  <div>
+                    <h2
+                      style={{
+                        margin: 0,
+                        color: COLORS.ink,
+                        fontSize: 16,
+                      }}
+                    >
+                      {selectedTaskList.title}
+                    </h2>
+                    <div
+                      style={{
+                        marginTop: 3,
+                        color: COLORS.inkSoft,
+                        fontSize: 11,
+                      }}
+                    >
+                      {selectedTaskList.items.length} tarefa(s)
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setTaskListFilter(null)}
+                    title="Fechar"
+                    style={taskActionButtonStyle}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {selectedTaskList.items.length === 0 ? (
+                  <EmptyState>Nenhuma tarefa nesta lista.</EmptyState>
+                ) : (
+                  selectedTaskList.items.map((task) => (
+                    <TaskRow
+                      key={`filtered-${task.id}`}
+                      task={task}
+                      onToggle={toggleTaskStatus}
+                      onEdit={(selectedTask) => {
+                        setTaskListFilter(null);
+                        setEditingTask(selectedTask);
+                        setTaskModalOpen(true);
+                      }}
+                      onDelete={deleteTask}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
           <TaskModal
             open={taskModalOpen}
             taskToEdit={editingTask}

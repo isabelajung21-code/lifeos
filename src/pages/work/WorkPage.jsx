@@ -8,11 +8,13 @@ import {
   Pencil,
   Plus,
   Search,
+  Trash2,
 } from "lucide-react";
 
 import { supabase } from "../../services/supabase";
 import { COLORS } from "../../constants/theme";
 import WorkDemandModal from "../../components/modals/WorkDemandModal";
+import TaskModal from "../../components/modals/TaskModal";
 
 
 
@@ -61,6 +63,9 @@ export default function WorkPage({ currentUser }) {
 
   const [editingDemand, setEditingDemand] =
     useState(null);
+
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
     loadWork();
@@ -174,6 +179,52 @@ export default function WorkPage({ currentUser }) {
   function closeDemandModal() {
     setDemandModalOpen(false);
     setEditingDemand(null);
+  }
+
+  function openEditTask(task) {
+    setEditingTask(task);
+    setTaskModalOpen(true);
+  }
+
+  function closeTaskModal() {
+    setTaskModalOpen(false);
+    setEditingTask(null);
+  }
+
+  async function moveToTrash(table, item, entityType) {
+    
+    try {
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("display_name", currentUser)
+        .single();
+
+      if (userError) throw userError;
+
+      const now = new Date().toISOString();
+      const { error: deleteError } = await supabase
+        .from(table)
+        .update({ deleted_at: now, deleted_by: user.id, updated_at: now })
+        .eq("id", item.id);
+
+      if (deleteError) throw deleteError;
+
+      await supabase.from("activity_logs").insert({
+        user_id: user.id,
+        module: "Trabalho",
+        action: "enviou para a lixeira",
+        entity_type: entityType,
+        entity_id: item.id,
+        entity_name: item.title,
+        details: { message: `Enviou para a lixeira: ${item.title}` },
+      });
+
+      await loadWork();
+    } catch (error) {
+      console.error("Erro ao mover item para a Lixeira:", error);
+      alert("Não foi possível mover o item para a Lixeira.");
+    }
   }
 
   if (loading) {
@@ -425,6 +476,28 @@ export default function WorkPage({ currentUser }) {
                     >
                       <Pencil size={13} />
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        moveToTrash("work_demands", demand, "work_demand")
+                      }
+                      title="Excluir demanda"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 8,
+                        background: COLORS.surface,
+                        color: COLORS.danger,
+                        display: "grid",
+                        placeItems: "center",
+                        cursor: "pointer",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -454,6 +527,8 @@ export default function WorkPage({ currentUser }) {
                   key={task.id}
                   title={task.title}
                   detail={formatDate(task.due_date)}
+                  onEdit={() => openEditTask(task)}
+                  onDelete={() => moveToTrash("tasks", task, "task")}
                 />
               ))
             )}
@@ -514,6 +589,17 @@ export default function WorkPage({ currentUser }) {
         demand={editingDemand}
         onClose={closeDemandModal}
         onSaved={loadWork}
+      />
+
+      <TaskModal
+        open={taskModalOpen}
+        currentUser={currentUser}
+        taskToEdit={editingTask}
+        onClose={closeTaskModal}
+        onSaved={async () => {
+          closeTaskModal();
+          await loadWork();
+        }}
       />
     </div>
   );
@@ -605,7 +691,7 @@ function SectionCard({ title, icon, children }) {
   );
 }
 
-function MiniItem({ title, detail }) {
+function MiniItem({ title, detail, onEdit, onDelete }) {
   return (
     <div
       style={{
@@ -627,15 +713,46 @@ function MiniItem({ title, detail }) {
         {title}
       </span>
 
-      <span
+      <div
         style={{
-          color: COLORS.inkSoft,
-          fontSize: 9,
-          whiteSpace: "nowrap",
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+          flexShrink: 0,
         }}
       >
-        {detail}
-      </span>
+        <span
+          style={{
+            color: COLORS.inkSoft,
+            fontSize: 9,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {detail}
+        </span>
+
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            title="Editar"
+            style={miniActionButtonStyle}
+          >
+            <Pencil size={12} />
+          </button>
+        )}
+
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            title="Excluir"
+            style={{ ...miniActionButtonStyle, color: COLORS.danger }}
+          >
+            <Trash2 size={12} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -670,3 +787,15 @@ function Badge({ children }) {
     </span>
   );
 }
+
+const miniActionButtonStyle = {
+  width: 26,
+  height: 26,
+  border: `1px solid ${COLORS.border}`,
+  borderRadius: 7,
+  background: COLORS.surface,
+  color: COLORS.primaryDark,
+  display: "grid",
+  placeItems: "center",
+  cursor: "pointer",
+};

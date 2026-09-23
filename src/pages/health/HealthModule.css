@@ -1,0 +1,5876 @@
+.health-module {
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 245px;
+  background: #ffffff;
+  border-right: 1px solid #e6e9e5;
+  padding: 30px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+}
+
+.sidebar h1 {
+  margin: 0;
+  letter-spacing: 4px;
+  font-size: 24px;
+}
+
+.sidebar p {
+  margin: 5px 0 32px;
+  color: #7b8798;
+  font-size: 12px;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sidebar button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 9px;
+  color: #526174;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.sidebar button:hover {
+  background: #f5f6f4;
+}
+
+.sidebar button.active {
+  background: #eaf3fc;
+  color: #3977b8;
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  margin-left: 245px;
+  padding: 32px 40px 60px;
+  max-width: 1600px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.topbar h2 {
+  margin: 4px 0 0;
+  font-size: 28px;
+}
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  color: #7b8798;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #5f92cc;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 30px;
+  border-radius: 16px;
+  background: #5f92cc;
+  color: white;
+  margin-bottom: 24px;
+}
+
+.welcome .eyebrow {
+  color: #d8e8f7;
+}
+
+.welcome h3 {
+  margin: 6px 0;
+  font-size: 25px;
+}
+
+.welcome p {
+  margin: 0;
+  color: #dae2de;
+}
+
+.primaryButton {
+  background: white;
+  color: #5f92cc;
+  padding: 11px 18px;
+  border-radius: 9px;
+  border: 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.card,
+.panel {
+  background: white;
+  border: 1px solid #e5e9e6;
+  border-radius: 14px;
+}
+
+.card {
+  padding: 20px;
+}
+
+.card > span {
+  font-size: 13px;
+  color: #6a7689;
+}
+
+.cardValue {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.cardValue small {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8c9590;
+}
+
+.card p {
+  margin: 7px 0 0;
+  color: #a1a7a4;
+  font-size: 11px;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.dashboardGrid:nth-of-type(4) {
+  grid-template-columns: 1fr 1fr;
+}
+
+.panel {
+  padding: 22px;
+}
+
+.panel.large {
+  min-height: 330px;
+}
+
+.panel h3 {
+  margin: 5px 0 18px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.panelHeader select {
+  border: 1px solid #dfe4e1;
+  border-radius: 7px;
+  padding: 7px 10px;
+  background: white;
+}
+
+.placeholderChart {
+  height: 225px;
+  border-radius: 10px;
+  border: 1px dashed #d5ddd8;
+  background: #fafbfa;
+  display: grid;
+  place-items: center;
+  color: #a1aaa5;
+  font-size: 12px;
+}
+
+.emptyState {
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  color: #737d78;
+}
+
+.emptyState strong {
+  color: #4d5752;
+  font-size: 13px;
+}
+
+.emptyState span {
+  max-width: 270px;
+  font-size: 12px;
+}
+
+.macro {
+  margin-top: 18px;
+}
+
+.macro > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+
+.progress {
+  height: 7px;
+  background: #edf4fb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress div {
+  width: 0;
+  height: 100%;
+  background: #587465;
+}
+
+.statsList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat {
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat span {
+  font-size: 11px;
+  color: #858e89;
+}
+
+.stat strong {
+  font-size: 16px;
+}
+
+.pagePlaceholder {
+  min-height: 350px;
+}
+
+.pagePlaceholder p {
+  color: #818b86;
+}
+
+@media (max-width: 1000px) {
+  .cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dashboardGrid,
+  .dashboardGrid:nth-of-type(4) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    bottom: auto;
+    position: relative;
+  }
+
+  .app {
+    display: block;
+  }
+
+  .content {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .sidebar nav {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .sidebar button {
+    white-space: nowrap;
+  }
+
+  .cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .welcome {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+/* =========================
+   EXAMES
+========================= */
+
+.examsPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.examsHero {
+  background: #5f92cc;
+  color: white;
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.examsHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.examsHero h3 {
+  margin: 6px 0 6px;
+  font-size: 24px;
+}
+
+.examsHero p {
+  margin: 0;
+  color: #dbe6f1;
+  max-width: 650px;
+  font-size: 13px;
+}
+
+.examAddButton {
+  border: 0;
+  border-radius: 9px;
+  background: white;
+  color: #5f92cc;
+  font-weight: 600;
+  padding: 11px 17px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.examSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.examSummaryCard {
+  min-height: 118px;
+}
+
+.examLatestPanel {
+  min-height: 190px;
+}
+
+.latestResultsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.latestResultCard {
+  background: #f8fafc;
+  border: 1px solid #edf0ed;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.latestResultTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.latestResultTop > span:first-child {
+  font-size: 12px;
+  color: #69736e;
+  font-weight: 600;
+}
+
+.latestResultCard strong {
+  display: block;
+  font-size: 22px;
+  color: #29332e;
+}
+
+.latestResultCard strong small {
+  font-size: 11px;
+  color: #7b8798;
+  font-weight: 500;
+}
+
+.latestResultCard p {
+  margin: 6px 0 0;
+  color: #9aa19e;
+  font-size: 10px;
+}
+
+.examStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.examStatus-normal {
+  background: #e5f1ea;
+  color: #3e6952;
+}
+
+.examStatus-low {
+  background: #edf1fa;
+  color: #526c9e;
+}
+
+.examStatus-high {
+  background: #f9e8e5;
+  color: #9c4e45;
+}
+
+.examStatus-unknown {
+  background: #f1f2f1;
+  color: #7b817e;
+}
+
+.examTableHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.examTableHeader h3 {
+  margin-bottom: 0;
+}
+
+.examSearch {
+  width: 290px;
+  max-width: 100%;
+  border: 1px solid #dfe4e1;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: none;
+  color: #2a322e;
+}
+
+.examSearch:focus {
+  border-color: #789488;
+}
+
+.examTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.examTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.examTable th {
+  text-align: left;
+  padding: 11px 12px;
+  background: #f8fafc;
+  color: #828a86;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  font-weight: 700;
+  border-bottom: 1px solid #e8ebe9;
+}
+
+.examTable td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #eef0ef;
+  font-size: 12px;
+  color: #626b66;
+}
+
+.examTable td strong {
+  color: #333c37;
+}
+
+.examTable tbody tr:hover {
+  background: #fafbfa;
+}
+
+.examHistoryList {
+  display: flex;
+  flex-direction: column;
+}
+
+.examHistoryItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.examHistoryItem:last-child {
+  border-bottom: 0;
+}
+
+.examDateBox {
+  width: 50px;
+  height: 55px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: #e9efec;
+  color: #5f92cc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.examDateBox strong {
+  font-size: 18px;
+}
+
+.examDateBox span {
+  text-transform: uppercase;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.examHistoryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 185px;
+}
+
+.examHistoryInfo strong {
+  font-size: 13px;
+  color: #333c37;
+}
+
+.examHistoryInfo span {
+  font-size: 11px;
+  color: #7c8580;
+}
+
+.examHistoryInfo small {
+  color: #9da4a0;
+  font-size: 9px;
+}
+
+.examHistoryMarkers {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.examHistoryMarkers span {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #f4f6f4;
+  color: #747d78;
+  font-size: 9px;
+}
+
+.examDeleteButton {
+  background: transparent;
+  border: 1px solid #ead8d5;
+  color: #a15e55;
+  border-radius: 7px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.examDeleteButton:hover {
+  background: #fbf1ef;
+}
+
+.examEmpty {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.examEmpty strong {
+  color: #59625d;
+  font-size: 12px;
+}
+
+.examEmpty span {
+  color: #8995a6;
+  font-size: 11px;
+}
+
+/* MODAL */
+
+.examModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 30, 26, 0.48);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.examModal {
+  width: min(1100px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.13);
+}
+
+.examModalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 17px;
+  border-bottom: 1px solid #ecefed;
+  margin-bottom: 20px;
+}
+
+.examModalHeader h3 {
+  margin: 5px 0 0;
+  font-size: 21px;
+}
+
+.examCloseButton {
+  border: 0;
+  background: #f2f4f2;
+  color: #68716c;
+  border-radius: 50%;
+  width: 33px;
+  height: 33px;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.examFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 13px;
+}
+
+.examModal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #69726d;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.examModal input,
+.examModal select,
+.examModal textarea {
+  width: 100%;
+  border: 1px solid #dfe4e1;
+  background: #ffffff;
+  color: #2e3632;
+  border-radius: 8px;
+  padding: 9px 10px;
+  outline: none;
+  font-size: 12px;
+}
+
+.examModal input:focus,
+.examModal select:focus,
+.examModal textarea:focus {
+  border-color: #779286;
+}
+
+.examModal textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.examResultsTitle {
+  margin-top: 25px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.examResultsTitle h4 {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.examSecondaryButton {
+  border: 1px solid #ccd8d2;
+  color: #5f92cc;
+  background: #f8faf9;
+  border-radius: 8px;
+  padding: 8px 11px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.examResultRows {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.examResultRow {
+  display: grid;
+  grid-template-columns:
+    34px
+    minmax(160px, 2fr)
+    minmax(90px, 1fr)
+    minmax(90px, 1fr)
+    minmax(85px, 1fr)
+    minmax(85px, 1fr)
+    35px;
+  gap: 8px;
+  align-items: end;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.examResultNumber {
+  height: 35px;
+  display: grid;
+  place-items: center;
+  background: #e6ede9;
+  border-radius: 7px;
+  color: #496457;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.examRemoveResult {
+  height: 35px;
+  width: 35px;
+  border-radius: 7px;
+  border: 0;
+  background: #f3e9e7;
+  color: #a25d53;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.examNotes {
+  margin-top: 18px;
+}
+
+.examFormActions {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #ecefed;
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.examCancelButton,
+.examSaveButton {
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.examCancelButton {
+  border: 1px solid #dce2de;
+  color: #6f7873;
+  background: white;
+}
+
+.examSaveButton {
+  border: 0;
+  color: white;
+  background: #5f92cc;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 1100px) {
+  .examSummaryGrid,
+  .latestResultsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .examResultRow {
+    grid-template-columns: 30px 2fr 1fr 1fr;
+  }
+
+  .examResultRow label:nth-of-type(4),
+  .examResultRow label:nth-of-type(5) {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .examsHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .examSummaryGrid,
+  .latestResultsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .examTableHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .examSearch {
+    width: 100%;
+  }
+
+  .examHistoryItem {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .examHistoryMarkers {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .examDeleteButton {
+    margin-left: auto;
+  }
+
+  .examModalOverlay {
+    padding: 10px;
+  }
+
+  .examModal {
+    padding: 18px;
+  }
+
+  .examFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .examResultsTitle {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .examResultRow {
+    grid-template-columns: 30px 1fr;
+  }
+
+  .examResultNumber {
+    align-self: end;
+  }
+
+  .examResultRow label {
+    grid-column: 2;
+  }
+
+  .examRemoveResult {
+    grid-column: 2;
+  }
+}
+
+/* =========================
+   ALIMENTAÇÃO
+========================= */
+
+.nutritionPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nutritionHero {
+  background: #5f92cc;
+  color: white;
+  padding: 26px 28px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.nutritionHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.nutritionHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.nutritionHero p {
+  margin: 0;
+  color: #dbe6f1;
+  font-size: 13px;
+}
+
+.nutritionHeroActions {
+  display: flex;
+  gap: 8px;
+}
+
+.nutritionHeroActions input {
+  background: white;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.nutritionPrimaryButton {
+  border: 0;
+  border-radius: 8px;
+  background: white;
+  color: #5f92cc;
+  padding: 10px 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nutritionCards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.nutritionStatCard {
+  min-width: 0;
+}
+
+.nutritionMiniProgress {
+  margin-top: 12px;
+  background: #edf4fb;
+  height: 6px;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.nutritionMiniProgress div {
+  background: #4f82ba;
+  height: 100%;
+  border-radius: 99px;
+}
+
+.nutritionLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.nutritionMeals,
+.nutritionSide {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mealPanel {
+  padding: 18px 20px;
+}
+
+.mealHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.mealHeader h3 {
+  margin-bottom: 0;
+}
+
+.mealHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mealHeaderRight strong {
+  font-size: 12px;
+  color: #59645e;
+}
+
+.mealHeaderRight button {
+  border: 1px solid #d9e2dd;
+  background: #f8faf9;
+  color: #5f92cc;
+  border-radius: 7px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.nutritionEmpty {
+  padding: 25px 0;
+  color: #a0a7a3;
+  text-align: center;
+  font-size: 11px;
+}
+
+.mealEntries {
+  margin-top: 15px;
+}
+
+.mealEntry {
+  display: grid;
+  grid-template-columns: 1fr auto 30px;
+  gap: 15px;
+  align-items: center;
+  padding: 11px 0;
+  border-top: 1px solid #edf4fb;
+}
+
+.mealEntry > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mealEntry strong {
+  color: #39433e;
+  font-size: 12px;
+}
+
+.mealEntry span {
+  color: #8c9590;
+  font-size: 10px;
+}
+
+.mealMacros {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mealMacros span {
+  color: #5f92cc;
+  font-weight: 700;
+}
+
+.mealMacros small {
+  color: #828c87;
+}
+
+.mealDeleteButton {
+  border: 0;
+  background: #f5e9e7;
+  color: #a35d52;
+  border-radius: 6px;
+  height: 27px;
+  width: 27px;
+  cursor: pointer;
+}
+
+.nutritionGoal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid #eff1f0;
+  font-size: 11px;
+  color: #6f7873;
+}
+
+.nutritionGoal div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nutritionGoal input {
+  width: 75px;
+  padding: 6px;
+  border: 1px solid #dee4e0;
+  border-radius: 6px;
+  text-align: right;
+}
+
+.nutritionGoal small {
+  color: #9ba29e;
+}
+
+.nutritionProgress {
+  margin-top: 17px;
+}
+
+.nutritionProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
+.nutritionProgressHeader span {
+  color: #6f7974;
+}
+
+.nutritionProgressHeader strong {
+  color: #4d5852;
+}
+
+.nutritionProgressBar {
+  height: 7px;
+  background: #edf4fb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.nutritionProgressBar div {
+  height: 100%;
+  background: #4f82ba;
+  border-radius: 99px;
+}
+
+.foodLibrary {
+  display: flex;
+  flex-direction: column;
+}
+
+.foodLibraryItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.foodLibraryItem div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.foodLibraryItem strong {
+  font-size: 11px;
+  color: #424d47;
+}
+
+.foodLibraryItem span {
+  font-size: 9px;
+  color: #929a96;
+}
+
+.foodLibraryItem button {
+  border: 0;
+  background: transparent;
+  color: #ad6a61;
+  cursor: pointer;
+}
+
+/* MODAIS */
+
+.nutritionModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 30, 26, 0.48);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+}
+
+.nutritionModal {
+  background: white;
+  width: min(800px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 15px;
+  padding: 24px;
+}
+
+.nutritionModal.smallModal {
+  max-width: 460px;
+}
+
+.nutritionModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.nutritionModalHeader h3 {
+  margin: 5px 0 0;
+}
+
+.nutritionModalHeader > button {
+  border: 0;
+  background: #f1f6fb;
+  color: #68726d;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.nutritionFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.nutritionModal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #526174;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.nutritionModal input,
+.nutritionModal select {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px 10px;
+  outline: none;
+}
+
+.nutritionModal input:focus,
+.nutritionModal select:focus {
+  border-color: #6f9dcc;
+}
+
+.nutritionSingleField {
+  margin-bottom: 15px;
+}
+
+.nutritionModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid #edf4fb;
+}
+
+.nutritionCancelButton,
+.nutritionSaveButton {
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nutritionCancelButton {
+  background: white;
+  border: 1px solid #dce2df;
+  color: #707a75;
+}
+
+.nutritionSaveButton {
+  border: 0;
+  background: #5f92cc;
+  color: white;
+}
+
+@media (max-width: 1100px) {
+  .nutritionCards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .nutritionLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .nutritionHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nutritionHeroActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .nutritionCards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mealHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mealHeaderRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .mealEntry {
+    grid-template-columns: 1fr 30px;
+  }
+
+  .mealMacros {
+    grid-column: 1;
+    flex-wrap: wrap;
+  }
+
+  .mealDeleteButton {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .nutritionFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
+   MEDIDAS
+========================= */
+
+.measurementsPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.measurementsHero {
+  background: #5f92cc;
+  color: white;
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.measurementsHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.measurementsHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.measurementsHero p {
+  margin: 0;
+  color: #dbe6f1;
+  font-size: 13px;
+}
+
+.measurementAddButton {
+  border: 0;
+  border-radius: 9px;
+  background: white;
+  color: #5f92cc;
+  padding: 11px 17px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.measurementSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.measurementCard {
+  min-width: 0;
+}
+
+.measurementGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.measurementDate {
+  font-size: 11px;
+  color: #8a938e;
+}
+
+.measurementDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.measurementDetail {
+  background: #f8fafc;
+  border-radius: 9px;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.measurementDetail span {
+  font-size: 10px;
+  color: #7b8798;
+}
+
+.measurementDetail strong {
+  font-size: 14px;
+  color: #223047;
+}
+
+.measurementComparison {
+  display: flex;
+  flex-direction: column;
+}
+
+.measurementComparisonRow {
+  padding: 11px 0;
+  border-bottom: 1px solid #edf4fb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.measurementComparisonRow:last-child {
+  border-bottom: 0;
+}
+
+.measurementComparisonRow > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.measurementComparisonRow span {
+  font-size: 11px;
+  color: #526174;
+}
+
+.measurementComparisonRow small {
+  font-size: 9px;
+  color: #9aa19d;
+}
+
+.measurementComparisonRow strong {
+  font-size: 11px;
+  color: #606963;
+}
+
+.measurementPositive {
+  color: #8a624a !important;
+}
+
+.measurementNegative {
+  color: #4b7661 !important;
+}
+
+.measurementEmpty {
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5px;
+}
+
+.measurementEmpty strong {
+  font-size: 12px;
+  color: #526174;
+}
+
+.measurementEmpty span {
+  font-size: 10px;
+  color: #8995a6;
+}
+
+.measurementTableWrapper {
+  overflow-x: auto;
+}
+
+.measurementTable {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+}
+
+.measurementTable th {
+  text-align: left;
+  padding: 11px 12px;
+  background: #f8fafc;
+  color: #838c87;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e7ebe8;
+}
+
+.measurementTable td {
+  padding: 12px;
+  border-bottom: 1px solid #eef0ef;
+  color: #626c66;
+  font-size: 11px;
+}
+
+.measurementDeleteButton {
+  border: 1px solid #ead9d5;
+  background: transparent;
+  color: #a16057;
+  border-radius: 7px;
+  padding: 6px 9px;
+  cursor: pointer;
+  font-size: 9px;
+}
+
+/* MODAL */
+
+.measurementModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 30, 26, 0.48);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+}
+
+.measurementModal {
+  width: min(850px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 15px;
+  padding: 24px;
+}
+
+.measurementModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.measurementModalHeader h3 {
+  margin: 5px 0 0;
+}
+
+.measurementModalHeader > button {
+  border: 0;
+  background: #f1f6fb;
+  color: #69736d;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.measurementFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 13px;
+}
+
+.measurementModal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #526174;
+}
+
+.measurementInputWrap {
+  position: relative;
+}
+
+.measurementInputWrap input {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px 42px 9px 10px;
+  outline: none;
+}
+
+.measurementInputWrap input:focus {
+  border-color: #6f9dcc;
+}
+
+.measurementInputWrap span {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa29e;
+  font-size: 9px;
+}
+
+.measurementNotes {
+  margin-top: 16px;
+}
+
+.measurementNotes textarea {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px;
+  resize: vertical;
+  font-family: inherit;
+  outline: none;
+}
+
+.measurementNotes textarea:focus {
+  border-color: #6f9dcc;
+}
+
+.measurementModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid #edf4fb;
+}
+
+.measurementCancelButton,
+.measurementSaveButton {
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.measurementCancelButton {
+  border: 1px solid #dce2df;
+  background: white;
+  color: #717a75;
+}
+
+.measurementSaveButton {
+  border: 0;
+  background: #5f92cc;
+  color: white;
+}
+
+@media (max-width: 1100px) {
+  .measurementSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .measurementGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .measurementDetailsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .measurementsHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .measurementSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .measurementDetailsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .measurementModalOverlay {
+    padding: 10px;
+  }
+
+  .measurementModal {
+    padding: 18px;
+  }
+
+  .measurementFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
+   BIOIMPEDÂNCIA
+========================= */
+
+.bioPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bioHero {
+  background: #5f92cc;
+  color: white;
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.bioHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.bioHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.bioHero p {
+  margin: 0;
+  color: #dbe6f1;
+  font-size: 13px;
+  max-width: 650px;
+}
+
+.bioAddButton {
+  border: 0;
+  border-radius: 9px;
+  background: white;
+  color: #5f92cc;
+  padding: 11px 17px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bioSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.bioCard {
+  min-width: 0;
+}
+
+.bioMainGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.bioDate {
+  font-size: 11px;
+  color: #7b8798;
+}
+
+.bioDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bioDetail {
+  background: #f8fafc;
+  padding: 13px;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bioDetail span {
+  font-size: 10px;
+  color: #7b8798;
+}
+
+.bioDetail strong {
+  color: #223047;
+  font-size: 14px;
+}
+
+.bioNotesBox {
+  margin-top: 14px;
+  border-top: 1px solid #edf4fb;
+  padding-top: 14px;
+}
+
+.bioNotesBox span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7d8781;
+}
+
+.bioNotesBox p {
+  margin: 5px 0 0;
+  color: #626c66;
+  font-size: 11px;
+}
+
+.bioComparison {
+  display: flex;
+  flex-direction: column;
+}
+
+.bioComparisonRow {
+  padding: 11px 0;
+  border-bottom: 1px solid #edf4fb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bioComparisonRow:last-child {
+  border-bottom: 0;
+}
+
+.bioComparisonRow > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bioComparisonRow span {
+  font-size: 11px;
+  color: #526174;
+}
+
+.bioComparisonRow small {
+  font-size: 9px;
+  color: #9aa19d;
+}
+
+.bioComparisonRow strong {
+  font-size: 11px;
+  color: #4f5b55;
+}
+
+.bioEmpty {
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5px;
+}
+
+.bioEmpty strong {
+  color: #526174;
+  font-size: 12px;
+}
+
+.bioEmpty span {
+  color: #8995a6;
+  font-size: 10px;
+}
+
+.bioTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.bioTable {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+}
+
+.bioTable th {
+  padding: 11px;
+  text-align: left;
+  background: #f8fafc;
+  border-bottom: 1px solid #e7ebe8;
+  color: #818a85;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bioTable td {
+  padding: 12px 11px;
+  border-bottom: 1px solid #edf4fb;
+  color: #626c66;
+  font-size: 10px;
+}
+
+.bioDeleteButton {
+  border: 1px solid #ead9d5;
+  background: transparent;
+  color: #a16057;
+  border-radius: 7px;
+  padding: 6px 9px;
+  cursor: pointer;
+  font-size: 9px;
+}
+
+/* MODAL BIOIMPEDÂNCIA */
+
+.bioModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 30, 26, 0.48);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+}
+
+.bioModal {
+  width: min(850px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 15px;
+  padding: 24px;
+}
+
+.bioModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.bioModalHeader h3 {
+  margin: 5px 0 0;
+}
+
+.bioModalHeader > button {
+  border: 0;
+  background: #f1f6fb;
+  color: #69736d;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.bioFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 13px;
+}
+
+.bioModal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #526174;
+}
+
+.bioInputWrap {
+  position: relative;
+}
+
+.bioInputWrap input {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px 46px 9px 10px;
+  outline: none;
+}
+
+.bioInputWrap input:focus {
+  border-color: #6f9dcc;
+}
+
+.bioInputWrap span {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa29e;
+  font-size: 9px;
+}
+
+.bioNotes {
+  margin-top: 16px;
+}
+
+.bioNotes textarea {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+
+.bioNotes textarea:focus {
+  border-color: #6f9dcc;
+}
+
+.bioModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid #edf4fb;
+}
+
+.bioCancelButton,
+.bioSaveButton {
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.bioCancelButton {
+  background: white;
+  border: 1px solid #dce2df;
+  color: #717a75;
+}
+
+.bioSaveButton {
+  background: #5f92cc;
+  color: white;
+  border: 0;
+}
+
+@media (max-width: 1100px) {
+  .bioSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bioMainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bioDetailsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .bioHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bioSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bioDetailsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bioFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bioModalOverlay {
+    padding: 10px;
+  }
+
+  .bioModal {
+    padding: 18px;
+  }
+}
+
+/* =========================
+   TREINOS
+========================= */
+
+.workoutsPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.workoutsHero {
+  background: #5f92cc;
+  color: white;
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.workoutsHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.workoutsHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.workoutsHero p {
+  margin: 0;
+  color: #dbe6f1;
+  max-width: 650px;
+  font-size: 13px;
+}
+
+.workoutPrimaryButton {
+  border: 0;
+  border-radius: 9px;
+  background: white;
+  color: #5f92cc;
+  padding: 11px 17px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.workoutSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.workoutPlansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.workoutPlanCard {
+  border: 1px solid #e6eae7;
+  background: #fbfcfb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.workoutPlanTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.workoutPlanTop h4 {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+
+.workoutDeleteButton {
+  border: 0;
+  background: #f3e9e7;
+  color: #a25e54;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.workoutExercisePreview {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.workoutExercisePreviewRow {
+  padding: 8px 0;
+  border-bottom: 1px solid #ecefed;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.workoutExercisePreviewRow span {
+  font-size: 11px;
+  color: #47524c;
+}
+
+.workoutExercisePreviewRow small {
+  font-size: 9px;
+  color: #909893;
+  text-align: right;
+}
+
+.workoutMoreExercises {
+  margin-top: 8px;
+  font-size: 9px;
+  color: #8e9692;
+}
+
+.workoutStartButton {
+  width: 100%;
+  margin-top: 15px;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px;
+  background: #5f92cc;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.workoutEmpty {
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5px;
+}
+
+.workoutEmpty strong {
+  font-size: 12px;
+  color: #526174;
+}
+
+.workoutEmpty span {
+  font-size: 10px;
+  color: #8995a6;
+}
+
+.workoutSessionList {
+  display: flex;
+  flex-direction: column;
+}
+
+.workoutSessionItem {
+  display: grid;
+  grid-template-columns: 55px 1fr 100px 130px;
+  align-items: center;
+  gap: 15px;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.workoutSessionItem:last-child {
+  border-bottom: 0;
+}
+
+.workoutSessionDate {
+  width: 48px;
+  height: 52px;
+  border-radius: 9px;
+  background: #eaf3fc;
+  color: #5f92cc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.workoutSessionDate strong {
+  font-size: 17px;
+}
+
+.workoutSessionDate span {
+  text-transform: uppercase;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.workoutSessionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.workoutSessionInfo strong {
+  color: #404a45;
+  font-size: 12px;
+}
+
+.workoutSessionInfo span {
+  color: #929a96;
+  font-size: 9px;
+}
+
+.workoutSessionMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.workoutSessionMetric span {
+  font-size: 9px;
+  color: #929a96;
+}
+
+.workoutSessionMetric strong {
+  font-size: 12px;
+  color: #4d5852;
+}
+
+/* MODAIS */
+
+.workoutModalOverlay,
+.workoutSessionOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 30, 26, 0.48);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+}
+
+.workoutModal,
+.workoutSessionModal {
+  width: min(1000px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 15px;
+  padding: 24px;
+}
+
+.workoutSessionModal {
+  max-width: 800px;
+}
+
+.workoutModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.workoutModalHeader h3 {
+  margin: 5px 0 0;
+}
+
+.workoutModalHeader > button {
+  border: 0;
+  background: #f1f6fb;
+  color: #69736d;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.workoutFocusText {
+  margin: 4px 0 0;
+  font-size: 10px;
+  color: #7b8798;
+}
+
+.workoutPlanFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.workoutModal label,
+.workoutSessionModal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #526174;
+}
+
+.workoutModal input,
+.workoutModal textarea,
+.workoutSessionModal input {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px 10px;
+  outline: none;
+  font-family: inherit;
+}
+
+.workoutModal input:focus,
+.workoutModal textarea:focus,
+.workoutSessionModal input:focus {
+  border-color: #6f9dcc;
+}
+
+.workoutExercisesTitle {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.workoutExercisesTitle h4 {
+  margin: 4px 0 0;
+}
+
+.workoutExercisesTitle > button {
+  border: 1px solid #d5dfda;
+  background: #f8faf9;
+  color: #5f92cc;
+  border-radius: 8px;
+  padding: 8px 11px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.workoutExerciseRows {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.workoutExerciseRow {
+  display: grid;
+  grid-template-columns:
+    34px
+    minmax(180px, 2fr)
+    75px
+    100px
+    100px
+    90px
+    35px;
+  gap: 8px;
+  align-items: end;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.workoutExerciseNumber {
+  height: 35px;
+  display: grid;
+  place-items: center;
+  background: #e6ede9;
+  color: #496457;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.workoutRemoveExercise {
+  width: 35px;
+  height: 35px;
+  border-radius: 7px;
+  border: 0;
+  background: #f3e9e7;
+  color: #a25d53;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.workoutNotes {
+  margin-top: 17px;
+}
+
+.workoutNotes textarea {
+  resize: vertical;
+}
+
+.workoutModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #edf4fb;
+}
+
+.workoutCancelButton,
+.workoutSaveButton {
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.workoutCancelButton {
+  background: white;
+  border: 1px solid #dce2df;
+  color: #717a75;
+}
+
+.workoutSaveButton {
+  border: 0;
+  background: #5f92cc;
+  color: white;
+}
+
+/* TREINO EM ANDAMENTO */
+
+.workoutSessionDateField {
+  max-width: 220px;
+  margin-bottom: 18px;
+}
+
+.workoutLiveExercises {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.workoutLiveExercise {
+  border: 1px solid #e3e8e5;
+  border-radius: 11px;
+  padding: 14px;
+}
+
+.workoutLiveExerciseHeader {
+  margin-bottom: 11px;
+}
+
+.workoutLiveExerciseHeader > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.workoutLiveExerciseHeader strong {
+  font-size: 13px;
+  color: #223047;
+}
+
+.workoutLiveExerciseHeader span {
+  font-size: 9px;
+  color: #8995a6;
+}
+
+.workoutSetHeader,
+.workoutSetRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 60px;
+  gap: 9px;
+  align-items: center;
+}
+
+.workoutSetHeader {
+  background: #f8fafc;
+  border-radius: 7px;
+  padding: 7px 9px;
+  margin-bottom: 6px;
+}
+
+.workoutSetHeader span {
+  font-size: 8px;
+  font-weight: 700;
+  color: #89918d;
+  text-transform: uppercase;
+}
+
+.workoutSetRow {
+  padding: 6px 9px;
+  border-bottom: 1px solid #eff1f0;
+}
+
+.workoutSetRow:last-child {
+  border-bottom: 0;
+}
+
+.workoutSetRow strong {
+  font-size: 11px;
+  color: #58625d;
+}
+
+.workoutSetRow input {
+  padding: 7px;
+}
+
+.workoutSetRow input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  justify-self: center;
+}
+
+.workoutLoadInput {
+  position: relative;
+}
+
+.workoutLoadInput input {
+  padding-right: 30px;
+}
+
+.workoutLoadInput span {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  color: #9ca39f;
+}
+
+@media (max-width: 1100px) {
+  .workoutSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .workoutPlansGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .workoutExerciseRow {
+    grid-template-columns: 30px 2fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .workoutsHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .workoutSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .workoutPlansGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workoutSessionItem {
+    grid-template-columns: 50px 1fr;
+  }
+
+  .workoutSessionMetric {
+    grid-column: 2;
+  }
+
+  .workoutPlanFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workoutExerciseRow {
+    grid-template-columns: 30px 1fr;
+  }
+
+  .workoutExerciseRow label {
+    grid-column: 2;
+  }
+
+  .workoutRemoveExercise {
+    grid-column: 2;
+  }
+
+  .workoutSetHeader,
+  .workoutSetRow {
+    grid-template-columns: 42px 1fr 1fr 42px;
+  }
+
+  .workoutModalOverlay,
+  .workoutSessionOverlay {
+    padding: 10px;
+  }
+}
+
+/* =========================
+   PERFORMANCE
+========================= */
+
+.performancePage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.performanceHero {
+  background: #5f92cc;
+  color: white;
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.performanceHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.performanceHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.performanceHero p {
+  margin: 0;
+  color: #dbe6f1;
+  font-size: 13px;
+  max-width: 650px;
+}
+
+.performanceHeroBadge {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  padding: 11px 15px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.performanceSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.performanceMainGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.performanceBottomGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.performanceSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.performanceSectionHeader h3 {
+  margin-bottom: 0;
+}
+
+.performanceSelect {
+  min-width: 220px;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: white;
+  color: #46514b;
+  outline: none;
+}
+
+.performanceSelect:focus {
+  border-color: #6f9dcc;
+}
+
+.exercisePerformanceCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.miniPerformanceCard {
+  background: #f8fafc;
+  border-radius: 9px;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.miniPerformanceCard span {
+  font-size: 9px;
+  color: #7b8798;
+}
+
+.miniPerformanceCard strong {
+  font-size: 16px;
+  color: #223047;
+}
+
+.miniPerformanceCard strong small {
+  font-size: 9px;
+  font-weight: 500;
+  color: #909893;
+}
+
+.performanceChart {
+  border: 1px solid #e8ece9;
+  border-radius: 11px;
+  padding: 16px;
+  background: #fbfcfb;
+}
+
+.performanceChartTitle {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.performanceChartTitle strong {
+  font-size: 11px;
+  color: #4c5751;
+}
+
+.performanceChartTitle span {
+  font-size: 9px;
+  color: #929a96;
+}
+
+.performanceBars {
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  overflow-x: auto;
+  padding-top: 20px;
+}
+
+.performanceBarColumn {
+  min-width: 48px;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 18px 1fr 20px;
+  align-items: end;
+  justify-items: center;
+}
+
+.performanceBarValue {
+  font-size: 8px;
+  color: #7e8782;
+}
+
+.performanceBarArea {
+  width: 24px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: #edf4fb;
+  border-radius: 6px 6px 3px 3px;
+  overflow: hidden;
+}
+
+.performanceBar {
+  width: 100%;
+  background: #4f82ba;
+  border-radius: 6px 6px 3px 3px;
+  transition: 0.2s;
+}
+
+.performanceBarColumn > span {
+  font-size: 8px;
+  color: #909893;
+}
+
+.performanceEmpty {
+  min-height: 145px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 5px;
+}
+
+.performanceEmpty strong {
+  font-size: 12px;
+  color: #526174;
+}
+
+.performanceEmpty span {
+  font-size: 10px;
+  color: #8995a6;
+  max-width: 320px;
+}
+
+.performanceComparison {
+  display: flex;
+  flex-direction: column;
+}
+
+.performanceComparisonRow {
+  padding: 12px 0;
+  border-bottom: 1px solid #edf4fb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.performanceComparisonRow:last-child {
+  border-bottom: 0;
+}
+
+.performanceComparisonRow > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.performanceComparisonRow span {
+  font-size: 10px;
+  color: #68726d;
+}
+
+.performanceComparisonRow small {
+  font-size: 9px;
+  color: #999f9c;
+}
+
+.performanceDifference {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.performanceDifference strong {
+  font-size: 11px;
+  color: #5f92cc;
+}
+
+.performanceDifference span {
+  font-size: 9px;
+  color: #85908a;
+}
+
+.performanceRanking {
+  display: flex;
+  flex-direction: column;
+}
+
+.performanceRankingRow {
+  display: grid;
+  grid-template-columns: 35px 1fr 120px 130px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.performanceRankingRow:last-child {
+  border-bottom: 0;
+}
+
+.performanceRankingNumber {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #eaf3fc;
+  color: #5f92cc;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.performanceRankingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.performanceRankingInfo strong {
+  font-size: 11px;
+  color: #414c46;
+}
+
+.performanceRankingInfo span {
+  font-size: 9px;
+  color: #929a96;
+}
+
+.performanceRankingMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.performanceRankingMetric span {
+  font-size: 8px;
+  color: #8995a6;
+}
+
+.performanceRankingMetric strong {
+  font-size: 10px;
+  color: #4e5953;
+}
+
+.bestSessionCard {
+  background: #f8fafc;
+  border-radius: 11px;
+  padding: 18px;
+}
+
+.bestSessionDate {
+  font-size: 9px;
+  color: #929a96;
+  margin-bottom: 6px;
+}
+
+.bestSessionCard > strong {
+  display: block;
+  font-size: 17px;
+  color: #223047;
+}
+
+.bestSessionCard > span {
+  display: block;
+  font-size: 10px;
+  color: #7b8798;
+  margin-top: 3px;
+}
+
+.bestSessionMetrics {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.bestSessionMetrics div {
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bestSessionMetrics span {
+  font-size: 8px;
+  color: #8995a6;
+}
+
+.bestSessionMetrics strong {
+  font-size: 11px;
+  color: #46514b;
+}
+
+.performanceTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.performanceTable {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.performanceTable th {
+  text-align: left;
+  padding: 11px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e7ebe8;
+  color: #818a85;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.performanceTable td {
+  padding: 12px;
+  border-bottom: 1px solid #edf4fb;
+  color: #626c66;
+  font-size: 10px;
+}
+
+.performanceTable td strong {
+  color: #414c46;
+}
+
+@media (max-width: 1100px) {
+  .performanceSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .performanceMainGrid,
+  .performanceBottomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .exercisePerformanceCards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .performanceHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .performanceSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .performanceSectionHeader {
+    flex-direction: column;
+  }
+
+  .performanceSelect {
+    width: 100%;
+  }
+
+  .exercisePerformanceCards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .performanceRankingRow {
+    grid-template-columns: 35px 1fr;
+  }
+
+  .performanceRankingMetric {
+    grid-column: 2;
+  }
+
+  .performanceBars {
+    min-height: 210px;
+  }
+}
+
+/* =========================
+   CHECK-IN
+========================= */
+
+.checkinPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checkinHero {
+  background: #5f92cc;
+  color: white;
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.checkinHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.checkinHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.checkinHero p {
+  margin: 0;
+  color: #dbe6f1;
+  max-width: 650px;
+  font-size: 13px;
+}
+
+.checkinPrimaryButton {
+  border: 0;
+  background: white;
+  color: #5f92cc;
+  border-radius: 9px;
+  padding: 11px 17px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.checkinSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.checkinMainGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.checkinDate {
+  font-size: 11px;
+  color: #7b8798;
+}
+
+.checkinDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.checkinDetail {
+  background: #f8fafc;
+  border-radius: 9px;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checkinDetail span {
+  font-size: 9px;
+  color: #7b8798;
+}
+
+.checkinDetail strong {
+  font-size: 14px;
+  color: #3e4843;
+}
+
+.checkinNotesBox {
+  margin-top: 14px;
+  border-top: 1px solid #edf4fb;
+  padding-top: 13px;
+}
+
+.checkinNotesBox span {
+  font-size: 9px;
+  font-weight: 700;
+  color: #808985;
+}
+
+.checkinNotesBox p {
+  margin: 5px 0 0;
+  color: #606a64;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.checkinIndicators {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.checkinIndicator {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.checkinIndicator > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkinIndicator span {
+  font-size: 10px;
+  color: #67716c;
+}
+
+.checkinIndicator strong {
+  font-size: 10px;
+  color: #45514a;
+}
+
+.checkinIndicatorBar {
+  height: 7px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: #edf4fb;
+}
+
+.checkinIndicatorBar div {
+  height: 100%;
+  background: #4f82ba;
+  border-radius: 99px;
+}
+
+.checkinEmpty {
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5px;
+}
+
+.checkinEmpty strong {
+  font-size: 12px;
+  color: #526174;
+}
+
+.checkinEmpty span {
+  font-size: 10px;
+  color: #8995a6;
+}
+
+.checkinTableWrapper {
+  overflow-x: auto;
+}
+
+.checkinTable {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+}
+
+.checkinTable th {
+  text-align: left;
+  padding: 11px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e7ebe8;
+  color: #818a85;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.checkinTable td {
+  padding: 11px;
+  border-bottom: 1px solid #edf4fb;
+  color: #626c66;
+  font-size: 10px;
+}
+
+.checkinTrained {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.checkinTrained.yes {
+  background: #e6f0eb;
+  color: #456956;
+}
+
+.checkinTrained.no {
+  background: #f1f2f1;
+  color: #858b88;
+}
+
+.checkinActions {
+  display: flex;
+  gap: 5px;
+}
+
+.checkinActions button {
+  border: 1px solid #dbe6f1;
+  background: white;
+  color: #65706a;
+  border-radius: 6px;
+  padding: 5px 7px;
+  cursor: pointer;
+  font-size: 8px;
+}
+
+.checkinActions .checkinDelete {
+  color: #a16057;
+  border-color: #ead9d5;
+}
+
+/* MODAL */
+
+.checkinModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 30, 26, 0.48);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+}
+
+.checkinModal {
+  width: min(800px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 15px;
+  padding: 24px;
+}
+
+.checkinModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.checkinModalHeader h3 {
+  margin: 5px 0 0;
+}
+
+.checkinModalHeader > button {
+  border: 0;
+  background: #f1f6fb;
+  color: #69736d;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.checkinFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 13px;
+}
+
+.checkinModal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #526174;
+}
+
+.checkinInputWrap {
+  position: relative;
+}
+
+.checkinInputWrap input {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px 42px 9px 10px;
+  outline: none;
+}
+
+.checkinInputWrap input:focus {
+  border-color: #6f9dcc;
+}
+
+.checkinInputWrap span {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa29e;
+  font-size: 9px;
+}
+
+.checkinScales {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  margin-top: 20px;
+}
+
+.checkinScale {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 13px;
+}
+
+.checkinScaleHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.checkinScaleHeader span {
+  font-size: 10px;
+  color: #68726d;
+}
+
+.checkinScaleHeader strong {
+  font-size: 10px;
+  color: #5f92cc;
+}
+
+.checkinScaleButtons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.checkinScaleButtons button {
+  border: 1px solid #dbe6f1;
+  background: white;
+  color: #7b8580;
+  border-radius: 7px;
+  padding: 7px;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.checkinScaleButtons button.active {
+  border-color: #5f92cc;
+  background: #5f92cc;
+  color: white;
+}
+
+.checkinToggle {
+  margin-top: 18px;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px !important;
+  padding: 13px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.checkinToggle input {
+  width: 17px;
+  height: 17px;
+}
+
+.checkinToggle div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkinToggle strong {
+  font-size: 10px;
+  color: #4b5650;
+}
+
+.checkinToggle span {
+  font-size: 9px;
+  color: #929a96;
+  font-weight: 400;
+}
+
+.checkinNotes {
+  margin-top: 16px;
+}
+
+.checkinNotes textarea {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 9px;
+  resize: vertical;
+  font-family: inherit;
+  outline: none;
+}
+
+.checkinNotes textarea:focus {
+  border-color: #6f9dcc;
+}
+
+.checkinModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #edf4fb;
+}
+
+.checkinCancelButton,
+.checkinSaveButton {
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.checkinCancelButton {
+  background: white;
+  border: 1px solid #dce2df;
+  color: #717a75;
+}
+
+.checkinSaveButton {
+  background: #5f92cc;
+  color: white;
+  border: 0;
+}
+
+@media (max-width: 1100px) {
+  .checkinSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .checkinMainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkinDetailGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .checkinHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .checkinSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .checkinDetailGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .checkinFormGrid,
+  .checkinScales {
+    grid-template-columns: 1fr;
+  }
+
+  .checkinModalOverlay {
+    padding: 10px;
+  }
+
+  .checkinModal {
+    padding: 18px;
+  }
+}
+
+/* =========================
+   EVOLUÇÃO
+========================= */
+
+.evolutionPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.evolutionHero {
+  background: #5f92cc;
+  color: white;
+  border-radius: 16px;
+  padding: 26px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.evolutionHero .eyebrow {
+  color: #d8e8f7;
+}
+
+.evolutionHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.evolutionHero p {
+  margin: 0;
+  color: #dbe6f1;
+  font-size: 13px;
+  max-width: 650px;
+}
+
+.evolutionPeriod {
+  background: white;
+  color: #5f92cc;
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 12px;
+  outline: none;
+  min-width: 175px;
+}
+
+.evolutionSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.evolutionChartsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.evolutionChartCard {
+  min-height: 300px;
+}
+
+.evolutionChartHeader h3 {
+  margin: 5px 0 18px;
+}
+
+.evolutionChartArea {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.evolutionLineChart {
+  min-width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding-top: 15px;
+}
+
+.evolutionPointColumn {
+  flex: 1;
+  min-width: 52px;
+  display: grid;
+  grid-template-rows: 20px 1fr 20px;
+  justify-items: center;
+}
+
+.evolutionPointValue {
+  font-size: 8px;
+  color: #748078;
+  white-space: nowrap;
+}
+
+.evolutionPointArea {
+  width: 100%;
+  position: relative;
+  border-bottom: 1px solid #dde3df;
+  background:
+    repeating-linear-gradient(
+      to top,
+      transparent,
+      transparent 44px,
+      #eef1ef 45px
+    );
+}
+
+.evolutionPoint {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #5f92cc;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #5f92cc;
+}
+
+.evolutionPointColumn > span {
+  margin-top: 5px;
+  font-size: 8px;
+  color: #8995a6;
+}
+
+.evolutionEmpty {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.evolutionEmpty strong {
+  color: #526174;
+  font-size: 12px;
+}
+
+.evolutionEmpty span {
+  color: #8995a6;
+  font-size: 10px;
+}
+
+.evolutionStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.evolutionMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+
+.evolutionMetric {
+  background: #f8fafc;
+  padding: 13px;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.evolutionMetric span {
+  font-size: 9px;
+  color: #88918c;
+}
+
+.evolutionMetric strong {
+  font-size: 15px;
+  color: #223047;
+}
+
+.evolutionMetric strong small {
+  font-size: 8px;
+  color: #929a96;
+  font-weight: 500;
+}
+
+.evolutionInnerChart .evolutionLineChart {
+  height: 240px;
+}
+
+.evolutionComparisonGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.evolutionComparisonItem {
+  padding: 14px;
+  border-radius: 9px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.evolutionComparisonItem span {
+  color: #7b8798;
+  font-size: 9px;
+}
+
+.evolutionComparisonItem strong {
+  color: #223047;
+  font-size: 12px;
+}
+
+.evolutionComparisonItem small {
+  color: #728078;
+  font-size: 9px;
+}
+
+@media (max-width: 1100px) {
+  .evolutionSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .evolutionChartsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolutionStatsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolutionComparisonGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .evolutionHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .evolutionPeriod {
+    width: 100%;
+  }
+
+  .evolutionSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .evolutionMetricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolutionComparisonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolutionLineChart {
+    min-width: 600px;
+  }
+}
+
+/* =========================
+   SUBSTITUIÇÕES
+========================= */
+
+.substitutionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.substitutionsHero {
+  background: #ffffff;
+  border: 1px solid #e4e9e6;
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.substitutionsHero h3 {
+  margin: 5px 0 5px;
+  font-size: 19px;
+}
+
+.substitutionsHero p {
+  margin: 0;
+  color: #818a85;
+  font-size: 11px;
+}
+
+.substitutionHeroActions {
+  display: flex;
+  gap: 8px;
+}
+
+.substitutionPrimaryButton,
+.substitutionSecondaryButton {
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.substitutionPrimaryButton {
+  background: #5f92cc;
+  color: white;
+  border: 0;
+}
+
+.substitutionSecondaryButton {
+  background: white;
+  color: #647069;
+  border: 1px solid #dbe6f1;
+}
+
+.substitutionSummary {
+  display: grid;
+  grid-template-columns: 140px 170px 1fr;
+  gap: 10px;
+}
+
+.substitutionSummary > div:not(
+  .substitutionSearchBox
+) {
+  background: white;
+  border: 1px solid #e4e9e6;
+  border-radius: 10px;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.substitutionSummary span {
+  color: #7b8798;
+  font-size: 9px;
+}
+
+.substitutionSummary strong {
+  color: #223047;
+  font-size: 17px;
+}
+
+.substitutionSearchBox {
+  background: white;
+  border: 1px solid #e4e9e6;
+  border-radius: 10px;
+  padding: 9px;
+}
+
+.substitutionSearchBox input {
+  width: 100%;
+  height: 100%;
+  min-height: 34px;
+  border: 0;
+  outline: none;
+  font-size: 11px;
+  color: #414b46;
+}
+
+.substitutionGroupsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.substitutionGroupCard {
+  background: white;
+  border: 1px solid #e4e9e6;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.substitutionGroupHeader {
+  padding: 17px;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.substitutionGroupHeader:hover {
+  background: #fafbfa;
+}
+
+.substitutionGroupHeader h4 {
+  margin: 4px 0;
+  color: #3c4741;
+  font-size: 14px;
+}
+
+.substitutionGroupHeader p {
+  margin: 0;
+  color: #959d99;
+  font-size: 9px;
+}
+
+.substitutionChevron {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #edf2ef;
+  color: #5f92cc;
+  font-size: 17px;
+}
+
+.substitutionGroupContent {
+  border-top: 1px solid #edf4fb;
+}
+
+.substitutionItems {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 6px 16px;
+}
+
+.substitutionItem {
+  min-height: 38px;
+  border-bottom: 1px solid #f0f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.substitutionItem:last-child {
+  border-bottom: 0;
+}
+
+.substitutionItem > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.substitutionItem > div > span:last-child {
+  color: #5e6963;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.substitutionBullet {
+  color: #567466;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+.substitutionItem > button {
+  border: 0;
+  background: transparent;
+  color: #b16e64;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.4;
+}
+
+.substitutionItem:hover > button {
+  opacity: 1;
+}
+
+.substitutionNoItems {
+  padding: 25px 0;
+  text-align: center;
+  color: #9aa19d;
+  font-size: 10px;
+}
+
+.substitutionGroupActions {
+  padding: 12px 16px;
+  border-top: 1px solid #edf4fb;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.substitutionAddOptionButton,
+.substitutionDeleteGroupButton {
+  padding: 7px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 9px;
+}
+
+.substitutionAddOptionButton {
+  border: 1px solid #cad8d1;
+  background: #f7faf8;
+  color: #5f92cc;
+  font-weight: 600;
+}
+
+.substitutionDeleteGroupButton {
+  border: 1px solid #ead8d5;
+  background: white;
+  color: #a7645a;
+}
+
+.substitutionEmpty {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.substitutionEmpty strong {
+  color: #526174;
+  font-size: 12px;
+}
+
+.substitutionEmpty span {
+  color: #979f9b;
+  font-size: 10px;
+}
+
+/* MODAL SUBSTITUIÇÕES */
+
+.substitutionModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 30, 26, 0.48);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+}
+
+.substitutionModal {
+  width: min(700px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 15px;
+  padding: 23px;
+  background: white;
+}
+
+.substitutionModal.small {
+  max-width: 500px;
+}
+
+.substitutionModalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 15px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.substitutionModalHeader h3 {
+  margin: 5px 0 0;
+  font-size: 18px;
+}
+
+.substitutionModalHeader > button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f6fb;
+  color: #69736d;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.substitutionModal form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.substitutionModal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #526174;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.substitutionModal input {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 10px;
+  outline: none;
+}
+
+.substitutionModal input:focus {
+  border-color: #6f9dcc;
+}
+
+.substitutionModalActions {
+  padding-top: 17px;
+  margin-top: 3px;
+  border-top: 1px solid #edf4fb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.substitutionCancelButton,
+.substitutionSaveButton {
+  padding: 9px 13px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.substitutionCancelButton {
+  border: 1px solid #dce2df;
+  background: white;
+  color: #717a75;
+}
+
+.substitutionSaveButton {
+  border: 0;
+  background: #5f92cc;
+  color: white;
+}
+
+@media (max-width: 900px) {
+  .substitutionGroupsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .substitutionSummary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .substitutionSearchBox {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .substitutionsHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .substitutionHeroActions {
+    width: 100%;
+  }
+
+  .substitutionHeroActions button {
+    flex: 1;
+  }
+
+  .substitutionSummary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .substitutionModalOverlay {
+    padding: 10px;
+  }
+}
+
+/* =========================
+   SUBSTITUIÇÕES → REFEIÇÕES
+========================= */
+
+.substitutionItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.substitutionItemActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.substitutionItemActions button {
+  cursor: pointer;
+}
+
+.substitutionUseButton {
+  border: 1px solid #cad8d1 !important;
+  background: #f5f9f7 !important;
+  color: #5f92cc !important;
+  border-radius: 6px !important;
+  padding: 5px 8px !important;
+  font-size: 8px !important;
+  font-weight: 700;
+  opacity: 1 !important;
+  white-space: nowrap;
+}
+
+.substitutionUseButton:hover {
+  background: #eaf3fc !important;
+}
+
+.substitutionRemoveButton {
+  border: 0 !important;
+  background: transparent !important;
+  color: #ad6a61 !important;
+  font-size: 16px !important;
+  opacity: 0.45;
+}
+
+.substitutionItem:hover
+.substitutionRemoveButton {
+  opacity: 1;
+}
+
+.substitutionSelectedItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  background: #f6f8f6;
+  border: 1px solid #e4e9e6;
+}
+
+.substitutionSelectedItem span {
+  color: #728078;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+}
+
+.substitutionSelectedItem strong {
+  color: #3d4842;
+  font-size: 13px;
+}
+
+.substitutionSelectedItem small {
+  color: #8995a6;
+  font-size: 9px;
+}
+
+.substitutionModal select {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 10px;
+  outline: none;
+  background: white;
+}
+
+.substitutionModal select:focus {
+  border-color: #6f9dcc;
+}
+
+.substitutionPortionExamples {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.substitutionPortionExamples > span {
+  margin-right: 3px;
+  color: #7b8798;
+  font-size: 9px;
+}
+
+.substitutionPortionExamples button {
+  border: 1px solid #dbe6f1;
+  background: #f8faf9;
+  color: #52655b;
+  border-radius: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 8px;
+}
+
+.substitutionPortionExamples button:hover {
+  border-color: #708a7e;
+  background: #edf3f0;
+}
+
+.mealPlanPortion {
+  display: block;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #eaf3fc;
+  color: #5f92cc;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.mealSubstitutionBadge {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f0f3f1;
+  color: #728078;
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .substitutionItem {
+    align-items: flex-start;
+  }
+
+  .substitutionItemActions {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .substitutionUseButton {
+    white-space: nowrap;
+  }
+}
+
+/* =========================
+   LOGIN / AUTENTICAÇÃO
+========================= */
+
+.authPage {
+  min-height: 100vh;
+  background: #f4f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.authCard {
+  width: min(430px, 100%);
+  background: white;
+  border: 1px solid #e4e9e6;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(30, 45, 38, 0.08);
+}
+
+.authBrand {
+  margin-bottom: 35px;
+}
+
+.authBrand h1 {
+  margin: 0;
+  letter-spacing: 4px;
+  font-size: 24px;
+  color: #29332e;
+}
+
+.authBrand p {
+  margin: 5px 0 0;
+  font-size: 11px;
+  color: #7b8798;
+}
+
+.authHeader h2 {
+  margin: 5px 0;
+  font-size: 26px;
+  color: #2e3833;
+}
+
+.authHeader p {
+  margin: 0 0 22px;
+  color: #7b8798;
+  font-size: 11px;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.authForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #526174;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.authForm input {
+  width: 100%;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  padding: 11px;
+  outline: none;
+  font: inherit;
+}
+
+.authForm input:focus {
+  border-color: #6f9dcc;
+}
+
+.authSubmitButton {
+  margin-top: 5px;
+  border: 0;
+  background: #5f92cc;
+  color: white;
+  border-radius: 8px;
+  padding: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.authSubmitButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.authMessage {
+  border-radius: 8px;
+  background: #f5f7f5;
+  color: #637069;
+  padding: 10px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.authSwitch {
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #edf4fb;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #7b8798;
+}
+
+.authSwitch button {
+  border: 0;
+  background: transparent;
+  color: #5f92cc;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.authLoading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #f4f7fb;
+  color: #68736d;
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoutButton {
+  border: 1px solid #dbe6f1;
+  background: white;
+  color: #69736e;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+/* =========================
+   SELEÇÃO DE USUÁRIO
+========================= */
+
+.userSelectionPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  background: #f5f7f5;
+}
+
+.userSelectionCard {
+  width: min(470px, 100%);
+  background: #ffffff;
+  border: 1px solid #e2e8e4;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 22px 70px rgba(35, 52, 44, 0.08);
+}
+
+.userSelectionBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 25px 28px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.userSelectionLogo {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #5f92cc;
+  color: white;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.userSelectionBrand h1 {
+  margin: 0;
+  color: #2e3933;
+  font-size: 19px;
+  letter-spacing: 3px;
+}
+
+.userSelectionBrand span {
+  display: block;
+  margin-top: 2px;
+  color: #929b96;
+  font-size: 9px;
+}
+
+.userSelectionContent {
+  padding: 32px 28px;
+}
+
+.userSelectionContent h2 {
+  margin: 6px 0;
+  color: #303a35;
+  font-size: 23px;
+}
+
+.userSelectionContent > p {
+  margin: 0 0 25px;
+  max-width: 330px;
+  color: #7b8798;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.userOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.userOption {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 12px;
+
+  padding: 13px;
+
+  background: white;
+  border: 1px solid #e0e6e2;
+  border-radius: 11px;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+.userOption:hover {
+  border-color: #91a69b;
+  background: #fafcfb;
+  transform: translateY(-1px);
+}
+
+.userOptionAvatar {
+  width: 40px;
+  height: 40px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #5f92cc;
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.userOptionAvatar.visitor {
+  background: #e8eeeb;
+  color: #526159;
+}
+
+.userOption strong {
+  display: block;
+  color: #223047;
+  font-size: 11px;
+}
+
+.userOption div > span {
+  display: block;
+  margin-top: 3px;
+  color: #979f9b;
+  font-size: 8px;
+}
+
+.userArrow {
+  color: #87948d;
+  font-size: 16px;
+}
+
+.userSelectionFooter {
+  padding: 15px 28px;
+  border-top: 1px solid #edf4fb;
+  background: #fafbfa;
+
+  color: #a0a7a3;
+  font-size: 8px;
+  text-align: center;
+  letter-spacing: 0.4px;
+}
+
+
+/* =========================
+   USUÁRIO NO TOPO
+========================= */
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.currentUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.currentUserAvatar {
+  width: 31px;
+  height: 31px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #5f92cc;
+  color: white;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.currentUserInfo > div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.currentUserInfo span {
+  color: #9aa29e;
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+.currentUserInfo strong {
+  color: #4c5751;
+  font-size: 9px;
+}
+
+.changeUserButton {
+  padding: 7px 9px;
+
+  border: 1px solid #dbe6f1;
+  border-radius: 7px;
+
+  background: white;
+  color: #717b75;
+
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.changeUserButton:hover {
+  background: #f6f8f7;
+}
+
+/* =========================
+   HISTÓRICO
+========================= */
+
+.historyPage {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.historyHeader h2 {
+  margin: 5px 0;
+  color: #303b35;
+  font-size: 21px;
+}
+
+.historyHeader p {
+  margin: 0;
+  color: #7b8798;
+  font-size: 10px;
+}
+
+.historyTotal {
+  min-width: 100px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #f4f7f5;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.historyTotal span {
+  color: #929b96;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.historyTotal strong {
+  color: #5f92cc;
+  font-size: 20px;
+}
+
+.historyFilters {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 12px;
+}
+
+.historySearch,
+.historyFilter {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.historyFilters label {
+  color: #758079;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.historyFilters input,
+.historyFilters select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  background: white;
+  color: #4c5751;
+  outline: none;
+  font-size: 10px;
+}
+
+.historyFilters input:focus,
+.historyFilters select:focus {
+  border-color: #718b7f;
+}
+
+.historyList {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.historyItem {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+}
+
+.historyTimeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.historyDot {
+  width: 8px;
+  height: 8px;
+  margin-top: 19px;
+  border-radius: 50%;
+  background: #607b6e;
+  flex-shrink: 0;
+}
+
+.historyLine {
+  width: 1px;
+  flex: 1;
+  background: #e2e8e4;
+}
+
+.historyItem:last-child .historyLine {
+  display: none;
+}
+
+.historyItemContent {
+  padding: 14px 5px 16px 4px;
+  border-bottom: 1px solid #edf4fb;
+}
+
+.historyItem:last-child
+.historyItemContent {
+  border-bottom: 0;
+}
+
+.historyItemTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.historyItemTop > div:first-child {
+  color: #69736e;
+  font-size: 10px;
+}
+
+.historyItemTop strong {
+  color: #3f4b45;
+}
+
+.historyDate {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.historyDate span {
+  color: #7e8983;
+  font-size: 8px;
+}
+
+.historyDate small {
+  color: #a1a8a4;
+  font-size: 8px;
+}
+
+.historyItemContent p {
+  margin: 6px 0;
+  color: #7c8681;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.historyMeta {
+  margin-top: 7px;
+}
+
+.historyMeta span {
+  display: inline-block;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #eef3f0;
+  color: #60776b;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.historyEmpty {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.historyEmpty strong {
+  color: #59645e;
+  font-size: 11px;
+}
+
+.historyEmpty span {
+  color: #979f9b;
+  font-size: 9px;
+}
+
+@media (max-width: 700px) {
+  .historyHeader {
+    align-items: flex-start;
+  }
+
+  .historyFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .historyItemTop {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+/* =========================
+   AÇÕES — SESSÕES DE TREINO
+========================= */
+
+.workoutSessionActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.workoutSessionActions button {
+  border: 1px solid #d9e1dd;
+  background: #ffffff;
+  border-radius: 7px;
+  padding: 6px 10px;
+  cursor: pointer;
+
+  font-size: 9px;
+  font-weight: 600;
+
+  color: #496156;
+
+  transition: 0.2s ease;
+}
+
+.workoutSessionActions button:hover {
+  background: #f2f6f4;
+  border-color: #cdd8d2;
+}
+
+.workoutSessionActions .danger {
+  color: #a74b4b;
+  border-color: #ead2d2;
+}
+
+.workoutSessionActions .danger:hover {
+  background: #fff2f2;
+  border-color: #ddbaba;
+}
+
+.workoutSessionItem {
+  grid-template-columns:
+    70px
+    minmax(160px, 1fr)
+    90px
+    110px
+    auto;
+}
+
+/* =========================
+   DASHBOARD — DADOS REAIS
+========================= */
+
+.dashboardPeriod {
+  font-size: 9px;
+  color: #88948e;
+}
+
+.dashboardWeightChart {
+  height: 210px;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 18px 8px 0;
+}
+
+.dashboardWeightColumn {
+  flex: 1;
+  min-width: 35px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboardWeightColumn strong {
+  font-size: 9px;
+  color: #52665c;
+}
+
+.dashboardWeightColumn span {
+  font-size: 8px;
+  color: #97a19c;
+}
+
+.dashboardWeightBarArea {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.dashboardWeightBar {
+  width: min(30px, 70%);
+  min-height: 8px;
+  border-radius: 6px 6px 2px 2px;
+  background: #607d70;
+  transition: height 0.3s ease;
+}
+
+.dashboardWorkout {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboardWorkout > span {
+  font-size: 9px;
+  color: #8b9690;
+}
+
+.dashboardWorkout > strong {
+  font-size: 16px;
+  color: #35453d;
+}
+
+.dashboardWorkout > small {
+  font-size: 9px;
+  color: #78847e;
+}
+
+.dashboardWorkoutStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.dashboardWorkoutStats > div {
+  padding: 10px;
+  border-radius: 8px;
+  background: #f5f8f6;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dashboardWorkoutStats span {
+  font-size: 8px;
+  color: #8a958f;
+}
+
+.dashboardWorkoutStats strong {
+  font-size: 14px;
+  color: #486055;
+}
+
+.dashboardLinkButton {
+  margin-top: 10px;
+  border: 1px solid #d8e1dc;
+  background: #ffffff;
+  color: #466055;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.dashboardLinkButton:hover {
+  background: #f2f6f4;
+}
+
+/* =========================
+   SONO
+========================= */
+
+.sleepPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sleepHero {
+  padding: 28px;
+  border-radius: 16px;
+  background: #3f6254;
+  color: #fff;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.sleepHero h3 {
+  margin: 6px 0;
+  font-size: 24px;
+}
+
+.sleepHero p {
+  margin: 0;
+  opacity: 0.85;
+}
+
+.sleepPrimaryButton {
+  border: none;
+  background: #fff;
+  color: #3f6254;
+
+  padding: 11px 16px;
+  border-radius: 9px;
+
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sleepSummaryGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sleepMainGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sleepMetricsGrid {
+  margin-top: 18px;
+
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sleepMetric,
+.sleepStage {
+  padding: 12px;
+  border-radius: 10px;
+  background: #f5f8f6;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sleepMetric span,
+.sleepStage span {
+  font-size: 9px;
+  color: #829087;
+}
+
+.sleepMetric strong,
+.sleepStage strong {
+  font-size: 14px;
+  color: #40584d;
+}
+
+.sleepRecoveryGrid {
+  margin-top: 18px;
+
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sleepRecovery {
+  border: 1px solid #e0e7e3;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.sleepRecovery > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sleepRecovery span {
+  font-size: 9px;
+  color: #76857d;
+}
+
+.sleepRecovery strong {
+  color: #40594d;
+}
+
+.sleepRecoveryBar {
+  margin-top: 10px;
+  height: 5px;
+  border-radius: 999px;
+  background: #edf1ef;
+  overflow: hidden;
+}
+
+.sleepRecoveryBar div {
+  height: 100%;
+  background: #57786a;
+  border-radius: inherit;
+}
+
+.sleepStagesGrid {
+  margin-top: 18px;
+
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sleepDate {
+  font-size: 9px;
+  color: #859189;
+}
+
+.sleepHistory {
+  margin-top: 15px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.sleepHistoryRow {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1.5fr)
+    repeat(3, 1fr)
+    auto;
+
+  align-items: center;
+  gap: 12px;
+
+  padding: 13px 4px;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.sleepHistoryRow > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sleepHistoryRow span {
+  font-size: 9px;
+  color: #87938c;
+}
+
+.sleepHistoryRow strong {
+  font-size: 11px;
+  color: #42574d;
+}
+
+.sleepHistoryActions {
+  flex-direction: row !important;
+  gap: 6px !important;
+}
+
+.sleepHistoryActions button {
+  border: 1px solid #d9e1dd;
+  background: #fff;
+
+  padding: 6px 9px;
+  border-radius: 7px;
+
+  font-size: 9px;
+  cursor: pointer;
+  color: #496156;
+}
+
+.sleepHistoryActions .danger {
+  color: #a74b4b;
+  border-color: #ead2d2;
+}
+
+.sleepEmpty {
+  min-height: 120px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+  color: #89958f;
+}
+
+.sleepModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  background: rgba(21, 30, 26, 0.48);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+}
+
+.sleepModal {
+  width: min(900px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.sleepModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e7ece9;
+}
+
+.sleepModalHeader h3 {
+  margin: 5px 0 0;
+}
+
+.sleepModalHeader > button {
+  border: none;
+  background: #f2f5f3;
+
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.sleepFormGrid {
+  margin-top: 20px;
+
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sleepFormGrid label,
+.sleepNotes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  font-size: 9px;
+  color: #5d6e65;
+}
+
+.sleepFormGrid input,
+.sleepFormGrid select,
+.sleepNotes textarea {
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+
+  padding: 10px;
+
+  font: inherit;
+  color: #34473e;
+
+  background: #fff;
+}
+
+.sleepNotes {
+  margin-top: 16px;
+}
+
+.sleepModalActions {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e7ece9;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sleepCancelButton,
+.sleepSaveButton {
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sleepCancelButton {
+  border: 1px solid #d9e1dd;
+  background: #fff;
+  color: #5a6b62;
+}
+
+.sleepSaveButton {
+  border: none;
+  background: #46695a;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .sleepSummaryGrid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .sleepMainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sleepFormGrid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .sleepHistoryRow {
+    grid-template-columns:
+      1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .sleepHero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sleepSummaryGrid,
+  .sleepFormGrid,
+  .sleepMetricsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sleepRecoveryGrid,
+  .sleepStagesGrid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .sleepHistoryRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboardSleepGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .dashboardSleepGrid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboardSleepGrid {
+    grid-template-columns: 1fr;
+  }
+}
+  /* Integração com o layout do lifeOS */
+
+  & {
+    width: 100%;
+    color: #223047;
+    font-family:
+      Inter,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+  }
+
+  > .app {
+    width: 100%;
+    min-height: auto;
+    align-items: flex-start;
+    background: transparent;
+  }
+
+  > .app > .sidebar {
+    position: sticky;
+    top: 22px;
+    left: auto;
+    bottom: auto;
+    width: 190px;
+    max-height: calc(100vh - 44px);
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 20px 14px;
+    border: 1px solid #dbe6f1;
+    border-radius: 14px;
+  }
+
+  > .app > .sidebar h1 {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  > .app > .sidebar p {
+    margin: 4px 0 20px;
+    font-size: 11px;
+  }
+
+  > .app > .sidebar button {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  > .app > .content {
+    width: calc(100% - 208px);
+    max-width: none;
+    margin-left: 18px;
+    padding: 0;
+  }
+
+  > .app > .content > .topbar h2 {
+    font-size: 21px;
+  }
+
+  .welcome h3 {
+    font-size: 20px;
+  }
+
+  .cardValue {
+    font-size: 23px;
+  }
+
+  @media (max-width: 900px) {
+    > .app {
+      display: block;
+    }
+
+    > .app > .sidebar {
+      position: relative;
+      top: auto;
+      width: 100%;
+      max-height: none;
+      margin-bottom: 14px;
+    }
+
+    > .app > .sidebar nav {
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    > .app > .sidebar button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    > .app > .content {
+      width: 100%;
+      margin-left: 0;
+      padding: 0;
+    }
+  }
+
+    /* Paleta e tipografia do lifeOS */
+
+  .sidebar h1,
+  .topbar h2,
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: #172033;
+  }
+
+  .sidebar button.active {
+    color: #3977b8;
+    background: #eaf3fc;
+  }
+
+  .primaryButton,
+  .saveButton,
+  .addButton,
+  .actionButton,
+  button.primary {
+    color: #ffffff;
+    background: #5f92cc;
+  }
+
+  .primaryButton:hover,
+  .saveButton:hover,
+  .addButton:hover,
+  .actionButton:hover,
+  button.primary:hover {
+    background: #4f82ba;
+  }
+
+  .card,
+  .panel {
+    border-color: #dbe6f1;
+    box-shadow: none;
+  }
+
+  input,
+  select,
+  textarea {
+    color: #223047;
+    background: #ffffff;
+    border-color: #d7e3ef;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #6f9dcc;
+    box-shadow: 0 0 0 3px rgba(95, 146, 204, 0.12);
+    outline: none;
+  }
+
+  .topbar h2 {
+    font-size: 20px;
+  }
+
+  .welcome h3 {
+    font-size: 19px;
+  }
+
+  .cardValue {
+    font-size: 22px;
+  }
+
+  .panel h2,
+  .panel h3,
+  .card h2,
+  .card h3 {
+    letter-spacing: -0.2px;
+  }
+}
