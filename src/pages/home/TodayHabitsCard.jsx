@@ -44,7 +44,17 @@ export default function TodayHabitsCard({ currentUser }) {
           .eq("is_active", true)
           .or(`owner_user_id.eq.${userId},visibility.eq.shared`)
           .order("created_at", { ascending: true }),
-        supabase.from("habit_logs").select("*").gte("log_date", startOfWeek()),
+          supabase
+          .from("habit_logs")
+          .select("*")
+          .eq(
+            "completed_by_user_id",
+            userId
+          )
+          .gte(
+            "log_date",
+            startOfWeek()
+          ),
       ]);
       if (habitsResult.error) throw habitsResult.error;
       if (logsResult.error) throw logsResult.error;
@@ -67,13 +77,23 @@ export default function TodayHabitsCard({ currentUser }) {
   async function toggle(habit) {
     setError("");
     try {
-      const existing = logs.find((log) => log.habit_id === habit.id && log.log_date === today);
+      const userId = await findUserId(
+        currentUser
+      );
+
+      const existing = logs.find(
+        (log) =>
+          log.habit_id === habit.id &&
+          log.log_date === today &&
+          log.completed_by_user_id ===
+            userId
+      );
       if (existing) {
         const { error: deleteError } = await supabase.from("habit_logs").delete().eq("id", existing.id);
         if (deleteError) throw deleteError;
         setLogs((current) => current.filter((log) => log.id !== existing.id));
       } else {
-        const userId = await findUserId(currentUser);
+        
         const { data, error: insertError } = await supabase.from("habit_logs").insert({
           habit_id: habit.id,
           log_date: today,
@@ -108,11 +128,13 @@ export default function TodayHabitsCard({ currentUser }) {
       {loading ? <div style={{ color: COLORS.inkSoft, fontSize: 13 }}>Carregando rotinas...</div> : todayHabits.length === 0 ? <div style={{ color: COLORS.inkSoft, fontSize: 13 }}>Nenhuma rotina programada para hoje.</div> : (
         <div style={{ display: "grid", gap: 8 }}>
           {todayHabits.map((habit) => {
+            const habitColor =
+              habit.color || "#5F92CC";
             const done = logs.some((log) => log.habit_id === habit.id && log.log_date === today);
             const weekCount = logs.filter((log) => log.habit_id === habit.id).reduce((sum, log) => sum + Number(log.completed_count || 0), 0);
             return (
-              <button key={habit.id} onClick={() => toggle(habit)} style={{ border: `1px solid ${done ? COLORS.success : COLORS.border}`, background: done ? COLORS.successLight : COLORS.bg, borderRadius: 10, padding: "10px 11px", display: "flex", alignItems: "center", gap: 10, textAlign: "left", color: COLORS.ink }}>
-                <span style={{ width: 25, height: 25, flex: "0 0 auto", borderRadius: 999, border: `1px solid ${done ? COLORS.success : COLORS.border}`, background: done ? COLORS.success : COLORS.surface, color: "white", display: "grid", placeItems: "center" }}>{done && <Check size={15} />}</span>
+              <button key={habit.id} onClick={() => toggle(habit)} style={{ border: `1px solid ${ done ? habitColor : COLORS.border }`, background: done? `${habitColor}18`: COLORS.bg, borderRadius: 10, padding: "10px 11px", display: "flex", alignItems: "center", gap: 10, textAlign: "left", color: COLORS.ink }}>
+                <span style={{ width: 25, height: 25, flex: "0 0 auto", borderRadius: 999, border: `1px solid ${ done ? habitColor : COLORS.border }`, background: done ? habitColor : COLORS.surface, color: "white", display: "grid", placeItems: "center" }}>{done && <Check size={15} />}</span>
                 <span style={{ flex: 1, fontWeight: 650, textDecoration: done ? "line-through" : "none", opacity: done ? .72 : 1 }}>{habit.title}</span>
                 {habit.frequency_type === "weekly_target" && <span style={{ color: COLORS.inkSoft, fontSize: 12 }}>{weekCount}/{habit.target_count} na semana</span>}
               </button>

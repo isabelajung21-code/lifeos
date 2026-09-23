@@ -39,6 +39,7 @@ import CalendarModal from "../../components/modals/CalendarModal";
 import TransactionModal from "../../components/modals/TransactionModal";
 import HomeContentCard from "./HomeContentCard";
 import HomeEntertainmentCard from "./HomeEntertainmentCard";
+import WaterTrackerCard from "../habits/WaterTrackerCard";
 
 
 
@@ -1739,6 +1740,13 @@ async function deleteEvent(event) {
           <div className="home-grid-two">
             <HomeJournalCard currentUser={currentUser} />
             <TodayHabitsCard currentUser={currentUser} />
+          </div>
+
+          <div style={{ marginTop: 18 }}>
+            <WaterTrackerCard
+              currentUser={currentUser}
+              compact
+            />
           </div>
 
           <div className="home-grid-three">
