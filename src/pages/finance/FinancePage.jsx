@@ -4206,10 +4206,10 @@ export default function FinancePage({ currentUser }) {
                         }}
                         >
                         <button
-                            onClick={() => {
+                            onClick={(e) => {
                               e.stopPropagation();
-                            setEditingCard(card);
-                            setCardModalOpen(true);
+                              setEditingCard(card);
+                              setCardModalOpen(true);
                             }}
                             title="Editar cartão"
                             style={{
@@ -4229,7 +4229,7 @@ export default function FinancePage({ currentUser }) {
                         </button>
 
                         <button
-                            onClick={() => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               deleteCard(card);
                             }}

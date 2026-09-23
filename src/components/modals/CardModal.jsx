@@ -147,12 +147,19 @@ export default function CardModal({
 
       await supabase.from("activity_logs").insert({
         user_id: user.id,
+        module: "Financeiro",
         action: cardToEdit ? "updated" : "created",
         entity_type: "finance_card",
         entity_id: cardToEdit?.id || null,
-        description: cardToEdit
-          ? `Alterou cartão: ${payload.name}`
-          : `Criou cartão: ${payload.name}`,
+        entity_name: payload.name,
+        details: {
+          message: cardToEdit
+            ? `Alterou cartão: ${payload.name}`
+            : `Criou cartão: ${payload.name}`,
+          closing_day: payload.closing_day,
+          due_day: payload.due_day,
+          limit_value: payload.limit_value,
+        },
       });
 
       onSaved?.();

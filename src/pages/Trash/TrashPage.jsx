@@ -228,6 +228,73 @@ export default function TrashPage({ currentUser }) {
         
         ]);
 
+      // Itens dos módulos mais recentes. Todos são normalizados abaixo e
+      // entram na mesma lista cronológica da Lixeira.
+      const [
+        inboxResult,
+        habitsResult,
+        inventoryResult,
+        personalGoalsResult,
+        documentsResult,
+        journalResult,
+        studyCoursesResult,
+        studyItemsResult,
+        studySessionsResult,
+        studyMaterialsResult,
+        contentItemsResult,
+        contentPillarsResult,
+        contentMetricsResult,
+        entertainmentItemsResult,
+        entertainmentProgressResult,
+        visibleListsResult,
+        deletedListsResult,
+      ] = await Promise.all([
+        supabase.from("inbox_items").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
+        supabase.from("habits").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
+        supabase.from("house_inventory_items").select("*").not("deleted_at", "is", null),
+        supabase.from("goals").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
+        supabase.from("documents").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
+        supabase.from("journal_entries").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("study_courses").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("study_items").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("study_sessions").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("study_materials").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("content_items").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("content_pillars").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("content_metrics").select("*").eq("owner_user_id", user.id).not("deleted_at", "is", null),
+        supabase.from("entertainment_items").select("*").not("deleted_at", "is", null),
+        supabase.from("entertainment_progress").select("*").not("deleted_at", "is", null),
+        supabase.from("lists").select("id, title, owner_user_id, visibility").or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
+        supabase.from("lists").select("*").not("deleted_at", "is", null).or(`owner_user_id.eq.${user.id},visibility.eq.shared`),
+      ]);
+
+      const extraResults = [
+        inboxResult, habitsResult, inventoryResult, personalGoalsResult,
+        documentsResult, journalResult, studyCoursesResult, studyItemsResult,
+        studySessionsResult, studyMaterialsResult, contentItemsResult,
+        contentPillarsResult, contentMetricsResult, entertainmentItemsResult,
+        entertainmentProgressResult, visibleListsResult, deletedListsResult,
+      ];
+
+      const extraError = extraResults.find((result) => result.error)?.error;
+      if (extraError) throw extraError;
+
+      const visibleLists = visibleListsResult.data || [];
+      const visibleListIds = visibleLists.map((list) => list.id);
+      const listMap = new Map(visibleLists.map((list) => [list.id, list.title]));
+
+      let deletedListItems = [];
+      if (visibleListIds.length > 0) {
+        const { data, error } = await supabase
+          .from("list_items")
+          .select("*")
+          .in("list_id", visibleListIds)
+          .not("deleted_at", "is", null);
+
+        if (error) throw error;
+        deletedListItems = data || [];
+      }
+
       const tasks = (tasksResult.data || []).map((item) => ({
         ...item,
         type: "task",
@@ -497,6 +564,126 @@ export default function TrashPage({ currentUser }) {
         module: "Projetos",
       }));
 
+      const inboxItems = (inboxResult.data || []).map((item) => ({
+        ...item,
+        type: "inbox_item",
+        title: item.title || item.content || "Item da caixa de entrada",
+        module: "Caixa de entrada",
+      }));
+
+      const habits = (habitsResult.data || []).map((item) => ({
+        ...item,
+        type: "habit",
+        title: item.title || item.name || "Rotina",
+        module: "Rotinas",
+      }));
+
+      const inventoryItems = (inventoryResult.data || []).map((item) => ({
+        ...item,
+        type: "house_inventory_item",
+        title: item.item_name || item.name || "Produto",
+        module: "Casa",
+      }));
+
+      const personalGoals = (personalGoalsResult.data || []).map((item) => ({
+        ...item,
+        type: "personal_goal",
+        title: item.title || "Meta pessoal",
+        module: "Metas",
+      }));
+
+      const documents = (documentsResult.data || []).map((item) => ({
+        ...item,
+        type: "document",
+        title: item.title || item.name || "Documento",
+        module: "Documentos",
+      }));
+
+      const journalEntries = (journalResult.data || []).map((item) => ({
+        ...item,
+        type: "journal_entry",
+        title: item.title || `Diário de ${item.entry_date || "registro"}`,
+        module: "Diário",
+      }));
+
+      const studyCourses = (studyCoursesResult.data || []).map((item) => ({
+        ...item,
+        type: "study_course",
+        title: item.title || "Curso",
+        module: "Estudos",
+      }));
+
+      const studyItems = (studyItemsResult.data || []).map((item) => ({
+        ...item,
+        type: "study_item",
+        title: item.title || "Planejamento de estudo",
+        module: "Estudos",
+      }));
+
+      const studySessions = (studySessionsResult.data || []).map((item) => ({
+        ...item,
+        type: "study_session",
+        title: item.title || `Sessão de ${item.duration_minutes || 0} minutos`,
+        module: "Estudos",
+      }));
+
+      const studyMaterials = (studyMaterialsResult.data || []).map((item) => ({
+        ...item,
+        type: "study_material",
+        title: item.title || "Material de estudo",
+        module: "Estudos",
+      }));
+
+      const contentItems = (contentItemsResult.data || []).map((item) => ({
+        ...item,
+        type: "content_item",
+        title: item.title || "Conteúdo",
+        module: "Conteúdo",
+      }));
+
+      const contentPillars = (contentPillarsResult.data || []).map((item) => ({
+        ...item,
+        type: "content_pillar",
+        title: item.name || "Pilar de conteúdo",
+        module: "Conteúdo",
+      }));
+
+      const contentMetrics = (contentMetricsResult.data || []).map((item) => ({
+        ...item,
+        type: "content_metric",
+        title: `Métricas de ${item.reference_date || "conteúdo"}`,
+        module: "Conteúdo",
+      }));
+
+      const entertainmentItems = (entertainmentItemsResult.data || []).map((item) => ({
+        ...item,
+        type: "entertainment_item",
+        title: item.title || "Livro, filme ou série",
+        module: "Entretenimento",
+      }));
+
+      const entertainmentProgress = (entertainmentProgressResult.data || []).map((item) => ({
+        ...item,
+        type: "entertainment_progress",
+        title: item.title || `Progresso de ${item.progress_date || "entretenimento"}`,
+        module: "Entretenimento",
+      }));
+
+      const deletedLists = (deletedListsResult.data || []).map((item) => ({
+        ...item,
+        type: "list",
+        title: item.title || "Lista",
+        module: "Listas",
+      }));
+
+      const listItems = deletedListItems.map((item) => ({
+        ...item,
+        type: "list_item",
+        title: item.content || "Item de lista",
+        module: "Listas",
+        listTitle: listMap.get(item.list_id) || "Lista",
+      }));
+
       const all = [
         ...tasks,
         ...notes,
@@ -524,6 +711,23 @@ export default function TrashPage({ currentUser }) {
         ...projectRisks,
         ...projectMilestones,
         ...deletedProjects,
+        ...inboxItems,
+        ...habits,
+        ...inventoryItems,
+        ...personalGoals,
+        ...documents,
+        ...journalEntries,
+        ...studyCourses,
+        ...studyItems,
+        ...studySessions,
+        ...studyMaterials,
+        ...contentItems,
+        ...contentPillars,
+        ...contentMetrics,
+        ...entertainmentItems,
+        ...entertainmentProgress,
+        ...deletedLists,
+        ...listItems,
       ].sort(
         (a, b) =>
           new Date(b.deleted_at) - new Date(a.deleted_at)
@@ -566,6 +770,23 @@ export default function TrashPage({ currentUser }) {
       project_risk: "project_risks",
       project_milestone: "project_milestones",
       project: "projects",
+      inbox_item: "inbox_items",
+      habit: "habits",
+      house_inventory_item: "house_inventory_items",
+      personal_goal: "goals",
+      list: "lists",
+      list_item: "list_items",
+      document: "documents",
+      journal_entry: "journal_entries",
+      study_course: "study_courses",
+      study_item: "study_items",
+      study_session: "study_sessions",
+      study_material: "study_materials",
+      content_item: "content_items",
+      content_pillar: "content_pillars",
+      content_metric: "content_metrics",
+      entertainment_item: "entertainment_items",
+      entertainment_progress: "entertainment_progress",
     };
 
     return tables[type];
@@ -608,6 +829,23 @@ export default function TrashPage({ currentUser }) {
       project_risk: "Risco de projeto",
       project_milestone: "Marco de projeto",
       project: "Projeto",
+      inbox_item: "Item da caixa de entrada",
+      habit: "Rotina",
+      house_inventory_item: "Produto da despensa",
+      personal_goal: "Meta pessoal",
+      list: "Lista",
+      list_item: "Item de lista",
+      document: "Documento",
+      journal_entry: "Registro do diário",
+      study_course: "Curso",
+      study_item: "Planejamento de estudo",
+      study_session: "Sessão de estudo",
+      study_material: "Material de estudo",
+      content_item: "Conteúdo",
+      content_pillar: "Pilar de conteúdo",
+      content_metric: "Métricas de conteúdo",
+      entertainment_item: "Livro, filme ou série",
+      entertainment_progress: "Progresso de entretenimento",
     };
 
     return labels[item.type] || "Item";
@@ -724,6 +962,29 @@ export default function TrashPage({ currentUser }) {
         deleted_at: null,
         deleted_by: null,
       };
+
+      const typesWithUpdatedAt = [
+        "inbox_item",
+        "habit",
+        "house_inventory_item",
+        "personal_goal",
+        "list",
+        "list_item",
+        "document",
+        "journal_entry",
+        "study_course",
+        "study_item",
+        "study_session",
+        "study_material",
+        "content_item",
+        "content_pillar",
+        "content_metric",
+        "entertainment_item",
+      ];
+
+      if (typesWithUpdatedAt.includes(item.type)) {
+        restoreData.updated_at = new Date().toISOString();
+      }
 
       if (item.type === "finance_subscription") {
         restoreData.is_active = true;
@@ -1346,6 +1607,40 @@ export default function TrashPage({ currentUser }) {
 
       if (userError) throw userError;
 
+      if (item.type === "house_shopping_item") {
+        const { error: unlinkError } = await supabase
+          .from("house_inventory_items")
+          .update({
+            shopping_item_id: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("shopping_item_id", item.id);
+
+        if (unlinkError) throw unlinkError;
+
+        const { error: deleteShoppingError } = await supabase
+          .from("house_shopping_items")
+          .delete()
+          .eq("id", item.id);
+
+        if (deleteShoppingError) throw deleteShoppingError;
+
+        await supabase.from("activity_logs").insert({
+          user_id: user.id,
+          module: "Casa",
+          action: "deleted_forever",
+          entity_type: "house_shopping_item",
+          entity_id: null,
+          entity_name: item.title,
+          details: {
+            message: `Excluiu definitivamente item da lista de compras: ${item.title}`,
+          },
+        });
+
+        await loadTrash();
+        return;
+      }
+
       if (item.type === "finance_subscription") {
         const subscriptionName =
           item.name || item.title;
@@ -1782,6 +2077,9 @@ export default function TrashPage({ currentUser }) {
                   {item.module || "Geral"}
                   {item.projectTitle
                     ? ` • ${item.projectTitle}`
+                    : ""}
+                  {item.listTitle
+                    ? ` • ${item.listTitle}`
                     : ""}
                   {" • excluído em "}
                   {new Date(
