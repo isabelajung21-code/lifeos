@@ -207,6 +207,11 @@ function SectionCard({ title, icon: Icon, action, children }) {
   return (
     <section
       style={{
+        width: "100%",
+        minWidth: 0,
+        maxWidth: "100%",
+        boxSizing: "border-box",
+        overflow: "hidden",
         background: COLORS.surface,
         border: `1px solid ${COLORS.border}`,
         borderRadius: 12,
@@ -219,6 +224,8 @@ function SectionCard({ title, icon: Icon, action, children }) {
           justifyContent: "space-between",
           alignItems: "center",
           gap: 10,
+          flexWrap: "wrap",
+          minWidth: 0,
           marginBottom: 11,
         }}
       >
@@ -251,6 +258,30 @@ function SectionCard({ title, icon: Icon, action, children }) {
 }
 
 export default function FinancePage({ currentUser }) {
+
+  const [isMobile, setIsMobile] = useState(
+    () => window.innerWidth <= 768
+  );
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(
+        window.innerWidth <= 768
+      );
+    }
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
+
+    return () => {
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+    };
+  }, []);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
 
@@ -2961,8 +2992,11 @@ export default function FinancePage({ currentUser }) {
     <div
       style={{
         width: "100%",
+        minWidth: 0,
         maxWidth: 1250,
         margin: "0 auto",
+        boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
       {/* Cabeçalho */}
@@ -3911,7 +3945,9 @@ export default function FinancePage({ currentUser }) {
       <div
         style={{
             display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gridTemplateColumns: isMobile
+              ? "minmax(0, 1fr)"
+              : "repeat(2, minmax(0, 1fr))",
             gap: 12,
             alignItems: "start",
         }}
@@ -4804,7 +4840,9 @@ export default function FinancePage({ currentUser }) {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        gridTemplateColumns: isMobile
+          ? "minmax(0, 1fr)"
+          : "repeat(2, minmax(0, 1fr))",
         gap: 12,
         alignItems: "start",
         marginTop: 14,
@@ -4884,6 +4922,10 @@ export default function FinancePage({ currentUser }) {
                   style={{
                     border: `1px solid ${COLORS.border}`,
                     borderRadius: 12,
+                    width: "100%",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    boxSizing: "border-box",
                     padding: 13,
                     background: COLORS.surface,
                   }}
@@ -5778,6 +5820,10 @@ export default function FinancePage({ currentUser }) {
                     gap: 9,
                     alignItems: "center",
                     border: `1px solid ${COLORS.border}`,
+                    width: "100%",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    boxSizing: "border-box",
                     borderRadius: 10,
                     padding: "8px 9px",
                   }}
