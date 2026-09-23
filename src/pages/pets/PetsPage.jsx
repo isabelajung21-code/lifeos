@@ -1434,7 +1434,7 @@ export default function PetsPage({ currentUser }) {
       {/* CABEÇALHO */}
       <div
         style={{
-          marginBottom: 22,
+          marginBottom: 16,
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "space-between",
@@ -1451,14 +1451,15 @@ export default function PetsPage({ currentUser }) {
             }}
           >
             <PawPrint
-              size={24}
+              size={20}
               color={COLORS.primary}
             />
 
             <h1
               style={{
                 margin: 0,
-                fontSize: 26,
+                fontSize: 20,
+                letterSpacing: "-0.3px",
                 color: COLORS.ink,
               }}
             >
@@ -1468,9 +1469,9 @@ export default function PetsPage({ currentUser }) {
 
           <p
             style={{
-              margin: "6px 0 0",
+              margin: "4px 0 0",
               color: COLORS.inkSoft,
-              fontSize: 13,
+              fontSize: 12,
             }}
           >
             Saúde, cuidados e rotina dos pets
@@ -1484,9 +1485,9 @@ export default function PetsPage({ currentUser }) {
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit, minmax(190px, 1fr))",
-          gap: 12,
-          marginBottom: 18,
+            "repeat(auto-fit, minmax(175px, 1fr))",
+          gap: 10,
+          marginBottom: 14,
         }}
       >
         {pets.map((pet) => {
@@ -1508,8 +1509,8 @@ export default function PetsPage({ currentUser }) {
                 background: selected
                   ? COLORS.primaryLight
                   : COLORS.surface,
-                borderRadius: 16,
-                padding: 16,
+                borderRadius: 12,
+                padding: 12,
                 cursor: "pointer",
                 transition: "0.15s ease",
                 color: COLORS.ink,
@@ -1524,9 +1525,9 @@ export default function PetsPage({ currentUser }) {
               >
                 <div
                   style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 13,
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1541,7 +1542,7 @@ export default function PetsPage({ currentUser }) {
                 >
                   <PetIcon
                     species={pet.species}
-                    size={22}
+                    size={18}
                   />
                 </div>
 
@@ -1552,7 +1553,7 @@ export default function PetsPage({ currentUser }) {
                 >
                   <div
                     style={{
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: 800,
                     }}
                   >
@@ -1576,7 +1577,7 @@ export default function PetsPage({ currentUser }) {
 
               <div
                 style={{
-                  marginTop: 13,
+                  marginTop: 9,
                   display: "flex",
                   gap: 6,
                   flexWrap: "wrap",
@@ -1646,10 +1647,10 @@ export default function PetsPage({ currentUser }) {
           <section
             style={{
               border: `1px solid ${COLORS.border}`,
-              borderRadius: 16,
+              borderRadius: 12,
               background: COLORS.surface,
-              padding: 18,
-              marginBottom: 16,
+              padding: 14,
+              marginBottom: 14,
             }}
           >
             <div
@@ -1660,7 +1661,7 @@ export default function PetsPage({ currentUser }) {
                   "space-between",
                 gap: 12,
                 flexWrap: "wrap",
-                marginBottom: 18,
+                marginBottom: 14,
               }}
             >
               <div
@@ -1672,9 +1673,9 @@ export default function PetsPage({ currentUser }) {
               >
                 <div
                   style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 15,
+                    width: 38,
+                    height: 38,
+                    borderRadius: 11,
                     background:
                       COLORS.primaryLight,
                     color: COLORS.primary,
@@ -1687,7 +1688,7 @@ export default function PetsPage({ currentUser }) {
                     species={
                       selectedPet.species
                     }
-                    size={27}
+                    size={20}
                   />
                 </div>
 
@@ -1695,7 +1696,7 @@ export default function PetsPage({ currentUser }) {
                   <h2
                     style={{
                       margin: 0,
-                      fontSize: 19,
+                      fontSize: 16,
                       color: COLORS.ink,
                     }}
                   >
@@ -1742,7 +1743,7 @@ export default function PetsPage({ currentUser }) {
                 display: "grid",
                 gridTemplateColumns:
                   "repeat(auto-fit, minmax(170px, 1fr))",
-                gap: 18,
+                gap: 14,
               }}
             >
               <InfoItem
@@ -1835,15 +1836,15 @@ export default function PetsPage({ currentUser }) {
               display: "grid",
               gridTemplateColumns:
                 "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: 16,
+              gap: 14,
             }}
           >
             <section
                 style={{
                     border: `1px solid ${COLORS.border}`,
-                    borderRadius: 16,
+                    borderRadius: 12,
                     background: COLORS.surface,
-                    padding: 18,
+                    padding: 14,
                 }}
                 >
                 <div
@@ -1872,7 +1873,7 @@ export default function PetsPage({ currentUser }) {
                         <h2
                         style={{
                             margin: 0,
-                            fontSize: 16,
+                            fontSize: 15,
                             color: COLORS.ink,
                         }}
                         >

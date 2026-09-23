@@ -871,6 +871,7 @@ export default function TransactionModal({
 
             source_id:
               currentRecurrence.source_id ||
+              sourceId ||
               houseBillToEdit?.id ||
               null,
             
@@ -1107,7 +1108,12 @@ export default function TransactionModal({
               .from("activity_logs")
               .insert({
                 user_id: user.id,
-                module: "Financeiro",
+                module:
+                  sourceModule === "casa"
+                    ? "Casa"
+                    : sourceModule === "projetos"
+                    ? "Projetos"
+                    : "Financeiro",
                 action: "updated",
                 entity_type:
                   "finance_recurrence",
@@ -1215,7 +1221,12 @@ export default function TransactionModal({
               .from("activity_logs")
               .insert({
                 user_id: user.id,
-                module: "Financeiro",
+                module:
+                  sourceModule === "casa"
+                    ? "Casa"
+                    : sourceModule === "projetos"
+                    ? "Projetos"
+                    : "Financeiro",
                 action: "updated",
                 entity_type:
                   "finance_recurrence",
@@ -1342,6 +1353,8 @@ export default function TransactionModal({
               module:
                 sourceModule === "casa"
                   ? "Casa"
+                  : sourceModule === "projetos"
+                  ? "Projetos"
                   : "Financeiro",
               action: "updated",
               entity_type:
@@ -1602,6 +1615,8 @@ export default function TransactionModal({
               module:
                 sourceModule === "casa"
                   ? "Casa"
+                  : sourceModule === "projetos"
+                  ? "Projetos"
                   : "Financeiro",
 
               action: "updated",
@@ -1965,6 +1980,8 @@ export default function TransactionModal({
           module:
             sourceModule === "casa"
               ? "Casa"
+              : sourceModule === "projetos"
+              ? "Projetos"
               : "Financeiro",
 
           action:

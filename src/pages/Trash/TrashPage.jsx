@@ -45,6 +45,11 @@ export default function TrashPage({ currentUser }) {
         petHealthPlansResult,
         petWeightsResult,
         petAppointmentsResult,
+        projectNotesResult,
+        projectDecisionsResult,
+        projectRisksResult,
+        projectMilestonesResult,
+        projectsResult,
       ] = await Promise.all([
         supabase
           .from("tasks")
@@ -182,6 +187,43 @@ export default function TrashPage({ currentUser }) {
             *,
             pet:pets(id, name)
           `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("project_notes")
+          .select(`
+            *,
+            project:projects(id, title)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("project_decisions")
+          .select(`
+            *,
+            project:projects(id, title)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("project_risks")
+          .select(`
+            *,
+            project:projects(id, title)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("project_milestones")
+          .select(`
+            *,
+            project:projects(id, title)
+          `)
+          .not("deleted_at", "is", null),
+
+        supabase
+          .from("projects")
+          .select("*")
           .not("deleted_at", "is", null),
         
         ]);
@@ -399,6 +441,62 @@ export default function TrashPage({ currentUser }) {
         module: "Pets",
       }));
 
+      const projectNotes = (
+        projectNotesResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "project_note",
+        title:
+          item.title ||
+          item.content?.slice(0, 80) ||
+          "Nota do projeto",
+        module: "Projetos",
+        projectTitle:
+          item.project?.title || "Projeto",
+      }));
+
+      const projectDecisions = (
+        projectDecisionsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "project_decision",
+        title: item.title || "Decisão do projeto",
+        module: "Projetos",
+        projectTitle:
+          item.project?.title || "Projeto",
+      }));
+
+      const projectRisks = (
+        projectRisksResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "project_risk",
+        title: item.title || "Risco do projeto",
+        module: "Projetos",
+        projectTitle:
+          item.project?.title || "Projeto",
+      }));
+
+      const projectMilestones = (
+        projectMilestonesResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "project_milestone",
+        title: item.title || "Marco do projeto",
+        module: "Projetos",
+        projectTitle:
+          item.project?.title || "Projeto",
+      }));
+
+      const deletedProjects = (
+        projectsResult.data || []
+      ).map((item) => ({
+        ...item,
+        type: "project",
+        title: item.title || "Projeto",
+        module: "Projetos",
+      }));
+
       const all = [
         ...tasks,
         ...notes,
@@ -421,6 +519,11 @@ export default function TrashPage({ currentUser }) {
         ...petHealthPlans,
         ...petWeights,
         ...petAppointments,
+        ...projectNotes,
+        ...projectDecisions,
+        ...projectRisks,
+        ...projectMilestones,
+        ...deletedProjects,
       ].sort(
         (a, b) =>
           new Date(b.deleted_at) - new Date(a.deleted_at)
@@ -458,6 +561,11 @@ export default function TrashPage({ currentUser }) {
       pet_health_plan: "pet_health_plans",
       pet_weight: "pet_weights",
       pet_appointment: "pet_appointments",
+      project_note: "project_notes",
+      project_decision: "project_decisions",
+      project_risk: "project_risks",
+      project_milestone: "project_milestones",
+      project: "projects",
     };
 
     return tables[type];
@@ -495,6 +603,11 @@ export default function TrashPage({ currentUser }) {
       pet_health_plan: "Plano de saúde",
       pet_weight: "Registro de peso",
       pet_appointment: "Consulta / Atendimento",
+      project_note: "Nota de projeto",
+      project_decision: "Decisão de projeto",
+      project_risk: "Risco de projeto",
+      project_milestone: "Marco de projeto",
+      project: "Projeto",
     };
 
     return labels[item.type] || "Item";
@@ -1127,12 +1240,91 @@ export default function TrashPage({ currentUser }) {
     }
   }
 
+  async function permanentlyDeleteProject(item) {
+    try {
+      // ==========================================
+      // 1. PRESERVA TAREFAS
+      // ==========================================
+
+      const { error: tasksError } = await supabase
+        .from("tasks")
+        .update({
+          source_module: "geral",
+          source_id: null,
+        })
+        .eq("source_module", "projetos")
+        .eq("source_id", item.id);
+
+      if (tasksError) throw tasksError;
+
+      // ==========================================
+      // 2. PRESERVA HISTÓRICO FINANCEIRO
+      // ==========================================
+
+      const { error: financeError } = await supabase
+        .from("finance_transactions")
+        .update({
+          source_module: "financeiro",
+          source_id: null,
+        })
+        .eq("source_module", "projetos")
+        .eq("source_id", item.id);
+
+      if (financeError) throw financeError;
+
+      // ==========================================
+      // 3. EXCLUI O PROJETO
+      // ==========================================
+
+      const { error: projectError } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", item.id);
+
+      if (projectError) throw projectError;
+
+      // Os filhos próprios do projeto são removidos
+      // por ON DELETE CASCADE:
+      // - project_milestones
+      // - project_notes
+      // - project_decisions
+      // - project_risks
+
+      await loadTrash();
+
+      alert("Projeto excluído definitivamente.");
+    } catch (error) {
+      console.error(
+        "Erro ao excluir projeto definitivamente:",
+        error
+      );
+
+      alert(
+        "Não foi possível excluir o projeto definitivamente."
+      );
+    }
+  }
+
   async function deleteForever(item) {
     const confirmed = window.confirm(
       `Excluir definitivamente "${item.title}"? Essa ação não pode ser desfeita.`
     );
 
     if (!confirmed) return;
+
+    if (item.type === "project") {
+      const confirmed = window.confirm(
+        `Excluir definitivamente o projeto "${item.title}"?\n\n` +
+          "Essa ação não pode ser desfeita.\n\n" +
+          "As tarefas e movimentações financeiras serão preservadas, mas deixarão de estar vinculadas ao projeto."
+      );
+
+      if (!confirmed) return;
+
+      await permanentlyDeleteProject(item);
+      return;
+    }
+
 
     try {
       const table = getTableByType(item.type);
@@ -1511,12 +1703,13 @@ export default function TrashPage({ currentUser }) {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 16 }}>
         <h1
           style={{
             margin: 0,
             color: COLORS.ink,
-            fontSize: 26,
+            fontSize: 20,
+            letterSpacing: "-0.3px",
           }}
         >
           Lixeira
@@ -1525,8 +1718,8 @@ export default function TrashPage({ currentUser }) {
         <p
           style={{
             color: COLORS.inkSoft,
-            marginTop: 6,
-            fontSize: 13,
+            marginTop: 4,
+            fontSize: 12,
           }}
         >
           Os itens permanecem aqui por até 30 dias antes da exclusão
@@ -1539,10 +1732,10 @@ export default function TrashPage({ currentUser }) {
           style={{
             background: COLORS.surface,
             border: `1px solid ${COLORS.border}`,
-            borderRadius: 14,
-            padding: 24,
+            borderRadius: 12,
+            padding: 18,
             color: COLORS.inkSoft,
-            fontSize: 13,
+            fontSize: 12,
           }}
         >
           A lixeira está vazia.
@@ -1552,7 +1745,7 @@ export default function TrashPage({ currentUser }) {
           style={{
             background: COLORS.surface,
             border: `1px solid ${COLORS.border}`,
-            borderRadius: 14,
+            borderRadius: 12,
             overflow: "hidden",
           }}
         >
@@ -1563,8 +1756,8 @@ export default function TrashPage({ currentUser }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: 16,
-                padding: "15px 18px",
+                gap: 12,
+                padding: "11px 13px",
                 borderBottom: `1px solid ${COLORS.border}`,
               }}
             >
@@ -1573,7 +1766,7 @@ export default function TrashPage({ currentUser }) {
                   style={{
                     color: COLORS.ink,
                     fontWeight: 600,
-                    fontSize: 14,
+                    fontSize: 13,
                   }}
                 >
                   {item.title}
@@ -1586,7 +1779,11 @@ export default function TrashPage({ currentUser }) {
                     marginTop: 4,
                   }}
                 >
-                  {item.module || "Geral"} • excluído em{" "}
+                  {item.module || "Geral"}
+                  {item.projectTitle
+                    ? ` • ${item.projectTitle}`
+                    : ""}
+                  {" • excluído em "}
                   {new Date(
                     item.deleted_at
                   ).toLocaleDateString("pt-BR")}
@@ -1621,8 +1818,8 @@ export default function TrashPage({ currentUser }) {
                   onClick={() => restoreItem(item)}
                   title="Restaurar"
                   style={{
-                    width: 34,
-                    height: 34,
+                    width: 30,
+                    height: 30,
                     display: "grid",
                     placeItems: "center",
                     border: `1px solid ${COLORS.border}`,
@@ -1632,7 +1829,7 @@ export default function TrashPage({ currentUser }) {
                     cursor: "pointer",
                   }}
                 >
-                  <RotateCcw size={16} />
+                  <RotateCcw size={14} />
                 </button>
 
                 <button

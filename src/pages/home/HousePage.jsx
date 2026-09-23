@@ -11,6 +11,7 @@ import {
 import { supabase } from "../../services/supabase";
 import HouseTaskModal from "../../components/modals/HouseTaskModal";
 import ShoppingItemModal from "../../components/modals/ShoppingItemModal";
+import HouseInventorySection from "./HouseInventorySection";
 import TransactionModal from "../../components/modals/TransactionModal";
 import HouseMaintenanceModal from "../../components/modals/HouseMaintenanceModal";
 import CompleteMaintenanceModal from "../../components/modals/CompleteMaintenanceModal";
@@ -24,9 +25,9 @@ const COLORS = {
   surface: "#FFFFFF",
   ink: "#1F2937",
   inkSoft: "#6B7280",
-  primary: "#4F8EF7",
-  primaryDark: "#2F6FDB",
-  primaryLight: "#EAF2FF",
+  primary: "#5B8FC9",
+  primaryDark: "#376A9F",
+  primaryLight: "#E4EFF9",
   border: "#DDE6F2",
   danger: "#D64545",
   dangerLight: "#FDECEC",
@@ -36,24 +37,39 @@ const COLORS = {
   amberLight: "#FFF5DD",
 };
 
+const primaryActionButton = {
+  border: 0,
+  background: COLORS.primary,
+  color: "#fff",
+  padding: "9px 12px",
+  borderRadius: 9,
+  fontWeight: 600,
+  fontSize: 13,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  cursor: "pointer",
+};
+
 function SectionCard({ title, subtitle, right, children }) {
   return (
     <section
       style={{
         background: COLORS.surface,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 16,
-        padding: 18,
-        marginBottom: 16,
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 14,
       }}
     >
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          gap: 12,
+          gap: 10,
           alignItems: "flex-start",
-          marginBottom: 16,
+          marginBottom: 12,
           flexWrap: "wrap",
         }}
       >
@@ -61,7 +77,7 @@ function SectionCard({ title, subtitle, right, children }) {
           <h2
             style={{
               margin: 0,
-              fontSize: 17,
+              fontSize: 15,
               color: COLORS.ink,
             }}
           >
@@ -2054,7 +2070,7 @@ const billMonthLabel = new Date(
     <div>
       <div
         style={{
-          marginBottom: 22,
+          marginBottom: 16,
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "space-between",
@@ -2071,14 +2087,15 @@ const billMonthLabel = new Date(
             }}
           >
             <House
-              size={24}
+              size={20}
               color={COLORS.primary}
             />
 
             <h1
               style={{
                 margin: 0,
-                fontSize: 26,
+                fontSize: 20,
+                letterSpacing: "-0.3px",
                 color: COLORS.ink,
               }}
             >
@@ -2088,9 +2105,9 @@ const billMonthLabel = new Date(
 
           <p
             style={{
-              margin: "6px 0 0",
+              margin: "4px 0 0",
               color: COLORS.inkSoft,
-              fontSize: 13,
+              fontSize: 12,
             }}
           >
             Tarefas, compras, contas e
@@ -2101,18 +2118,7 @@ const billMonthLabel = new Date(
         <button
           type="button"
           onClick={openNewTask}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 7,
-            border: 0,
-            borderRadius: 10,
-            background: COLORS.primary,
-            color: "#fff",
-            padding: "10px 14px",
-            fontWeight: 400,
-            cursor: "pointer",
-          }}
+          style={primaryActionButton}
         >
           <Plus size={16} />
           Nova tarefa
@@ -2124,16 +2130,16 @@ const billMonthLabel = new Date(
           display: "grid",
           gridTemplateColumns:
             "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: 12,
-          marginBottom: 16,
+          gap: 10,
+          marginBottom: 14,
         }}
       >
         <div
           style={{
             border: `1px solid ${COLORS.border}`,
             background: COLORS.surface,
-            borderRadius: 14,
-            padding: 16,
+            borderRadius: 12,
+            padding: 13,
           }}
         >
           <div
@@ -2149,7 +2155,7 @@ const billMonthLabel = new Date(
 
           <div
             style={{
-              fontSize: 26,
+              fontSize: 20,
               fontWeight: 800,
               marginTop: 5,
               color: COLORS.ink,
@@ -2578,6 +2584,8 @@ const billMonthLabel = new Date(
         )}
       </SectionCard>
 
+      <HouseInventorySection currentUser={currentUser} />
+
       <SectionCard
         title="Lista de compras"
         subtitle="Lista compartilhada para mercado, farmácia e itens da casa."
@@ -2585,18 +2593,7 @@ const billMonthLabel = new Date(
             <button
             type="button"
             onClick={openNewShoppingItem}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                border: 0,
-                borderRadius: 10,
-                background: COLORS.primary,
-                color: "#fff",
-                padding: "9px 13px",
-                fontWeight: 400,
-                cursor: "pointer",
-            }}
+            style={primaryActionButton}
             >
             <Plus size={15} />
             Adicionar item
@@ -2932,18 +2929,7 @@ const billMonthLabel = new Date(
             <button
             type="button"
             onClick={openNewBill}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                border: 0,
-                borderRadius: 10,
-                background: COLORS.primary,
-                color: "#fff",
-                padding: "9px 13px",
-                fontWeight: 400,
-                cursor: "pointer",
-            }}
+            style={primaryActionButton}
             >
             <Plus size={15} />
             Nova conta
@@ -3617,8 +3603,8 @@ const billMonthLabel = new Date(
             style={{
                 display: "grid",
                 gridTemplateColumns:
-                "repeat(2, minmax(0, 1fr))",
-                gap: 16,
+            "repeat(auto-fit, minmax(min(100%, 480px), 1fr))",
+            gap: 14,
                 alignItems: "start",
             }}
         >
@@ -3637,17 +3623,10 @@ const billMonthLabel = new Date(
                     setEditingMaintenance(null);
                     setMaintenanceModalOpen(true);
                 }}
-                style={{
-                    border: "none",
-                    borderRadius: 9,
-                    padding: "7px 11px",
-                    background: COLORS.primary,
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontSize: 15,
-                }}
+                style={primaryActionButton}
                 >
-                + Nova manutenção
+                <Plus size={15} />
+                Nova manutenção
                 </button>
             </div>
 
@@ -4362,17 +4341,10 @@ const billMonthLabel = new Date(
                         setEditingAsset(null);
                         setAssetModalOpen(true);
                     }}
-                    style={{
-                        border: "none",
-                        borderRadius: 9,
-                        padding: "7px 11px",
-                        background: COLORS.primary,
-                        color: "#fff",
-                        cursor: "pointer",
-                        fontSize: 10,
-                    }}
+                    style={primaryActionButton}
                     >
-                    + Novo item
+                    <Plus size={15} />
+                    Novo item
                     </button>
                 </div>
 

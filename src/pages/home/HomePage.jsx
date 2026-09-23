@@ -23,10 +23,21 @@ import {
   PinOff,
 } from "lucide-react";
 import QuickNoteModal from "../../components/modals/QuickNoteModal";
+import TodayHabitsCard from "./TodayHabitsCard";
+import HomeJournalCard from "./HomeJournalCard";
+import HomeStudiesCard from "./HomeStudiesCard";
+import HomeInboxCapture from "./HomeInboxCapture";
+import HomeInventoryAlert from "./HomeInventoryAlert";
+import WeeklyReviewCard from "./WeeklyReviewCard";
+import HomeLifeGoalsCard from "./HomeLifeGoalsCard";
+import HomeDocumentsAlert from "./HomeDocumentsAlert";
 import ImportantDateModal from "../../components/modals/ImportantDateModal";
 import EventModal from "../../components/modals/EventModal";
 import CalendarModal from "../../components/modals/CalendarModal";
 import TransactionModal from "../../components/modals/TransactionModal";
+import HomeContentCard from "./HomeContentCard";
+import HomeEntertainmentCard from "./HomeEntertainmentCard";
+
 
 
 function StatCard({ icon: Icon, label, value, detail }) {
@@ -35,8 +46,8 @@ function StatCard({ icon: Icon, label, value, detail }) {
       style={{
         background: COLORS.surface,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
-        padding: 18,
+        borderRadius: 12,
+        padding: 14,
         minWidth: 0,
       }}
     >
@@ -45,7 +56,7 @@ function StatCard({ icon: Icon, label, value, detail }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 14,
+          marginBottom: 10,
         }}
       >
         <span style={{ color: COLORS.inkSoft, fontSize: 13 }}>
@@ -54,9 +65,9 @@ function StatCard({ icon: Icon, label, value, detail }) {
 
         <div
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: 9,
+            width: 30,
+            height: 30,
+            borderRadius: 8,
             background: COLORS.primaryLight,
             color: COLORS.primaryDark,
             display: "grid",
@@ -69,7 +80,7 @@ function StatCard({ icon: Icon, label, value, detail }) {
 
       <div
         style={{
-          fontSize: 27,
+          fontSize: 21,
           fontWeight: 800,
           color: COLORS.ink,
         }}
@@ -98,8 +109,8 @@ function SectionCard({ title, icon: Icon, children, action }) {
       style={{
         background: COLORS.surface,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 15,
-        padding: 20,
+        borderRadius: 12,
+        padding: 16,
         minWidth: 0,
       }}
     >
@@ -108,8 +119,8 @@ function SectionCard({ title, icon: Icon, children, action }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 12,
-          marginBottom: 17,
+          gap: 10,
+          marginBottom: 13,
         }}
       >
         <div
@@ -124,7 +135,7 @@ function SectionCard({ title, icon: Icon, children, action }) {
           <h2
             style={{
               margin: 0,
-              fontSize: 16,
+              fontSize: 15,
               color: COLORS.ink,
             }}
           >
@@ -278,6 +289,8 @@ export default function HomePage({ currentUser }) {
   const [petMedications, setPetMedications] = useState([]);
   const [petHealthPlans, setPetHealthPlans] = useState([]);
   const [petAppointments, setPetAppointments] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [projectMilestones, setProjectMilestones] = useState([]);
 
 
   useEffect(() => {
@@ -316,6 +329,8 @@ export default function HomePage({ currentUser }) {
       petMedicationsResult,
       petHealthPlansResult,
       petAppointmentsResult,
+      projectsResult,
+      projectMilestonesResult,
     ] = await Promise.all([
       supabase
         .from("tasks")
@@ -412,6 +427,29 @@ export default function HomePage({ currentUser }) {
         .from("pet_appointments")
         .select("*")
         .is("deleted_at", null),
+
+      supabase
+        .from("projects")
+        .select("*")
+        .eq("owner_user_id", user.id)
+        .is("deleted_at", null)
+        .is("archived_at", null),
+
+      supabase
+        .from("project_milestones")
+        .select(`
+          *,
+          project:projects(
+            id,
+            title,
+            owner_user_id,
+            status,
+            archived_at,
+            deleted_at
+          )
+        `)
+        .is("deleted_at", null),
+
     ]);
 
     if (tasksResult.error) console.error(tasksResult.error);
@@ -499,6 +537,33 @@ export default function HomePage({ currentUser }) {
       petAppointmentsResult.data || []
     );
 
+    if (projectsResult.error) {
+      console.error(
+        "Erro ao carregar projetos:",
+        projectsResult.error
+      );
+    }
+
+    if (projectMilestonesResult.error) {
+      console.error(
+        "Erro ao carregar marcos dos projetos:",
+        projectMilestonesResult.error
+      );
+    }
+
+    setProjects(projectsResult.data || []);
+
+    setProjectMilestones(
+      (projectMilestonesResult.data || []).filter(
+        (milestone) =>
+          milestone.project &&
+          milestone.project.owner_user_id === user.id &&
+          !milestone.project.deleted_at &&
+          !milestone.project.archived_at &&
+          milestone.project.status !== "cancelado"
+      )
+    );
+
     setLoading(false);
   }
 
@@ -553,6 +618,32 @@ export default function HomePage({ currentUser }) {
     return eventStart <= weekEndISO && eventEnd >= todayISO;
     
   });
+
+  const weekProjects = (projects || [])
+    .filter(
+      (project) =>
+        project.due_date &&
+        project.due_date >= todayISO &&
+        project.due_date <= weekEndISO &&
+        project.status !== "concluido" &&
+        project.status !== "cancelado" &&
+        !project.archived_at
+    )
+    .sort((a, b) =>
+      a.due_date.localeCompare(b.due_date)
+    );
+
+  const weekMilestones = (projectMilestones || [])
+    .filter(
+      (milestone) =>
+        milestone.due_date &&
+        milestone.due_date >= todayISO &&
+        milestone.due_date <= weekEndISO &&
+        milestone.status !== "concluido"
+    )
+    .sort((a, b) =>
+      a.due_date.localeCompare(b.due_date)
+    );
 
   const homeGoals = (financeGoals || [])
     .map((goal) => {
@@ -988,7 +1079,130 @@ export default function HomePage({ currentUser }) {
         };
       });
 
+  const projectAttentionItems = (projects || [])
+    .filter(
+      (project) =>
+        project.due_date &&
+        project.status !== "concluido" &&
+        project.status !== "cancelado" &&
+        !project.archived_at
+    )
+    .map((project) => {
+      const days = getDaysUntil(project.due_date);
+
+      if (days === null || days > 7) {
+        return null;
+      }
+
+      if (days < 0) {
+        return {
+          id: `project-${project.id}`,
+          text: project.title,
+          detail:
+            Math.abs(days) === 1
+              ? "Projeto atrasado há 1 dia"
+              : `Projeto atrasado há ${Math.abs(days)} dias`,
+          type: "danger",
+          daysUntil: days,
+        };
+      }
+
+      if (days === 0) {
+        return {
+          id: `project-${project.id}`,
+          text: project.title,
+          detail: "Prazo do projeto é hoje",
+          type: "danger",
+          daysUntil: 0,
+        };
+      }
+
+      return {
+        id: `project-${project.id}`,
+        text: project.title,
+        detail:
+          days === 1
+            ? "Prazo do projeto é amanhã"
+            : `Prazo do projeto em ${days} dias`,
+        type: "warning",
+        daysUntil: days,
+      };
+    })
+    .filter(Boolean);
+
+  const milestoneAttentionItems = (projectMilestones || [])
+    .filter(
+      (milestone) =>
+        milestone.due_date &&
+        milestone.status !== "concluido"
+    )
+    .map((milestone) => {
+      const days = getDaysUntil(milestone.due_date);
+
+      if (days === null || days > 7) {
+        return null;
+      }
+
+      const projectName =
+        milestone.project?.title || "Projeto";
+
+      if (days < 0) {
+        return {
+          id: `project-milestone-${milestone.id}`,
+          text: milestone.title,
+          detail: `${projectName} • Marco atrasado há ${Math.abs(
+            days
+          )} ${
+            Math.abs(days) === 1 ? "dia" : "dias"
+          }`,
+          type: "danger",
+          daysUntil: days,
+        };
+      }
+
+      if (days === 0) {
+        return {
+          id: `project-milestone-${milestone.id}`,
+          text: milestone.title,
+          detail: `${projectName} • Marco vence hoje`,
+          type: "danger",
+          daysUntil: 0,
+        };
+      }
+
+      return {
+        id: `project-milestone-${milestone.id}`,
+        text: milestone.title,
+        detail: `${projectName} • ${
+          days === 1
+            ? "Marco vence amanhã"
+            : `Marco vence em ${days} dias`
+        }`,
+        type: "warning",
+        daysUntil: days,
+      };
+    })
+    .filter(Boolean);
+
   const attentionItems = [
+    // Projetos próximos ou atrasados
+    ...projectAttentionItems.map((item) => ({
+      ...item,
+      urgency:
+        item.type === "danger" ? 1 : 3,
+      urgencyOrder:
+        item.daysUntil ?? 9999,
+    })),
+
+    // Marcos de projetos próximos ou atrasados
+    ...milestoneAttentionItems.map((item) => ({
+      ...item,
+      urgency:
+        item.type === "danger" ? 1 : 3,
+      urgencyOrder:
+        item.daysUntil ?? 9999,
+    })),
+
     // Tarefas atrasadas
     ...overdue.map((task) => ({
       id: `overdue-${task.id}`,
@@ -1345,13 +1559,13 @@ async function deleteEvent(event) {
 
   return (
     <div>
-      <div style={{ marginBottom: 25 }}>
+      <div style={{ marginBottom: 18 }}>
         <h1
           style={{
             margin: 0,
-            fontSize: 29,
+            fontSize: 21,
             color: COLORS.ink,
-            letterSpacing: "-0.8px",
+            letterSpacing: "-0.4px",
           }}
         >
           {getGreeting()}, {currentUser}
@@ -1361,6 +1575,7 @@ async function deleteEvent(event) {
           style={{
             color: COLORS.inkSoft,
             margin: "6px 0 0",
+            fontSize: 12,
           }}
         >
           Aqui está o resumo da sua semana.
@@ -1373,6 +1588,66 @@ async function deleteEvent(event) {
         </div>
       ) : (
         <>
+
+          <div className="home-quick-actions">
+            {[
+              {
+                label: "Tarefa",
+                icon: ListTodo,
+                action: () => {
+                  setEditingTask(null);
+                  setTaskModalOpen(true);
+                },
+              },
+              {
+                label: "Despesa",
+                icon: CircleDollarSign,
+                action: () => setTransactionModalOpen(true),
+              },
+              {
+                label: "Projeto",
+                icon: Target,
+              },
+              {
+                label: "Evento",
+                icon: CalendarDays,
+                action: () => {
+                  setEditingEvent(null);
+                  setEventModalOpen(true);
+                },
+              },
+              {
+                label: "Anotação",
+                icon: StickyNote,
+                action: () => {
+                  setEditingNote(null);
+                  setNoteModalOpen(true);
+                },
+              },
+              {
+                label: "Data",
+                icon: Plus,
+                action: () => {
+                  setEditingDate(null);
+                  setDateModalOpen(true);
+                },
+              },
+            ].map((item) => {
+              const ActionIcon = item.icon;
+
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={item.action}
+                  className="home-quick-action"
+                >
+                  <ActionIcon size={14} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
           <div className="home-stats">
             <StatCard
               icon={CheckCircle2}
@@ -1403,96 +1678,73 @@ async function deleteEvent(event) {
             />
           </div>
 
+          <div className="home-grid-two">
+            <HomeInboxCapture currentUser={currentUser} />
+            <WeeklyReviewCard currentUser={currentUser} />
+          </div>
+
+          <div className="home-grid-two">
+            <HomeJournalCard currentUser={currentUser} />
+            <TodayHabitsCard currentUser={currentUser} />
+          </div>
+
+          <div className="home-grid-three">
+            <HomeStudiesCard currentUser={currentUser} />
+            <HomeContentCard currentUser={currentUser} />
+            <HomeEntertainmentCard currentUser={currentUser} />
+          </div>
+
           <div style={{ marginTop: 18}}>
-            <SectionCard title="Ações rápidas" icon={Plus}>
-            <div className="quick-actions">
-              {[
-                { label: "Nova tarefa", action: () => {setEditingTask(null); setTaskModalOpen(true) }},
-                {label: "Nova despesa",action: () => setTransactionModalOpen(true),},
-                { label: "Novo projeto" },
-                { label: "Novo evento", action: () => {setEditingEvent(null); setEventModalOpen(true) }},
-                { label: "Nova anotação", action: () => setNoteModalOpen(true) },
-                { label: "Nova data", action: () => {setEditingDate(null); setDateModalOpen(true) }},
-                ].map((item) => (
-                <button
-                    key={item.label}
-                    onClick={item.action}
-                    style={{
-                    border: `1px solid ${COLORS.border}`,
-                    background: COLORS.bg,
-                    color: COLORS.ink,
-                    borderRadius: 10,
-                     padding: "11px 15px",
-                    fontWeight: 600,
-                    fontSize: 12,
-                    }}
-                >
-    + {item.label}
-  </button>
-))}
-                
-            </div>
-          </SectionCard>
+                              
             <SectionCard
               title="O que precisa da minha atenção hoje?"
               icon={AlertTriangle}
             >
-              {attentionItems.length === 0 ? (
-                <div
-                  style={{
-                    background: COLORS.successLight,
-                    borderRadius: 10,
-                    padding: 14,
-                    color: COLORS.success,
-                    fontSize: 13,
-                    
-                  }}
-                >
-                  Tudo certo por aqui. Nenhuma pendência urgente no momento.
-                </div>
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 9,
-                  }}
-                >
-                  {attentionItems.map((item) => (
+              <div className="home-attention-grid">
+                {attentionItems.length === 0 && (
+                  <div className="home-attention-ok">
+                    Tudo certo por aqui. Nenhuma pendência urgente no momento.
+                  </div>
+                )}
+
+                {attentionItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className={
+                      item.type === "danger"
+                        ? "home-attention-item danger"
+                        : "home-attention-item warning"
+                    }
+                  >
                     <div
-                      key={item.id}
                       style={{
-                        padding: 12,
-                        borderRadius: 10,
-                        background:
-                          item.type === "danger"
-                            ? COLORS.dangerLight
-                            : COLORS.warningLight,
+                        fontWeight: 700,
+                        fontSize: 12,
+                        color: COLORS.ink,
                       }}
                     >
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: 13,
-                          color: COLORS.ink,
-                        }}
-                      >
-                        {item.text}
-                      </div>
-
-                      <div
-                        style={{
-                          marginTop: 3,
-                          fontSize: 11,
-                          color: COLORS.inkSoft,
-                        }}
-                      >
-                        {item.detail}
-                      </div>
+                      {item.text}
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    <div
+                      style={{
+                        marginTop: 2,
+                        fontSize: 10,
+                        color: COLORS.inkSoft,
+                      }}
+                    >
+                      {item.detail}
+                    </div>
+                  </div>
+                ))}
+
+                <HomeInventoryAlert compact />
+
+                <HomeDocumentsAlert
+                  currentUser={currentUser}
+                  compact
+                />
+              </div>
             </SectionCard>
           </div>
 
@@ -1539,12 +1791,16 @@ async function deleteEvent(event) {
                 </button>
               }
             >
-              {weekTasks.length === 0 && weekEvents.length === 0 ? (
+              {weekTasks.length === 0 &&
+              weekEvents.length === 0 &&
+              weekProjects.length === 0 &&
+              weekMilestones.length === 0 ? (
                 <EmptyState>
-                  Nenhuma tarefa ou evento nos próximos dias.
+                  Nenhuma tarefa, evento ou prazo nos próximos dias.
                 </EmptyState>
               ) : (
                 <>
+                  {/* TAREFAS */}
                   {weekTasks.map((task) => (
                     <TaskRow
                       key={`task-${task.id}`}
@@ -1558,6 +1814,7 @@ async function deleteEvent(event) {
                     />
                   ))}
 
+                  {/* EVENTOS */}
                   {weekEvents.map((event) => (
                     <div
                       key={`event-${event.id}`}
@@ -1589,7 +1846,9 @@ async function deleteEvent(event) {
                           }}
                         >
                           Evento • {formatDate(event.event_date)}
-                          {event.end_date && event.end_date !== event.event_date
+
+                          {event.end_date &&
+                          event.end_date !== event.event_date
                             ? ` até ${formatDate(event.end_date)}`
                             : ""}
                         </div>
@@ -1623,6 +1882,101 @@ async function deleteEvent(event) {
                         >
                           <Trash2 size={15} />
                         </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* PROJETOS */}
+                  {weekProjects.map((project) => (
+                    <div
+                      key={`project-${project.id}`}
+                      style={{
+                        padding: "11px 0",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                        }}
+                      >
+                        <Target
+                          size={14}
+                          color={COLORS.primaryDark}
+                        />
+
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: COLORS.ink,
+                          }}
+                        >
+                          {project.title}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 4,
+                          marginLeft: 21,
+                          fontSize: 11,
+                          color: COLORS.primaryDark,
+                        }}
+                      >
+                        Projeto • {formatDate(project.due_date)}
+                        {" • "}
+                        {Number(project.progress || 0)}% concluído
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* MARCOS */}
+                  {weekMilestones.map((milestone) => (
+                    <div
+                      key={`milestone-${milestone.id}`}
+                      style={{
+                        padding: "11px 0",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                        }}
+                      >
+                        <Flag
+                          size={14}
+                          color={COLORS.primaryDark}
+                        />
+
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: COLORS.ink,
+                          }}
+                        >
+                          {milestone.title}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 4,
+                          marginLeft: 21,
+                          fontSize: 11,
+                          color: COLORS.inkSoft,
+                        }}
+                      >
+                        Marco •{" "}
+                        {milestone.project?.title || "Projeto"}
+                        {" • "}
+                        {formatDate(milestone.due_date)}
                       </div>
                     </div>
                   ))}
@@ -1799,6 +2153,11 @@ async function deleteEvent(event) {
                   ))}
                 </div>
               )}
+
+              <HomeLifeGoalsCard
+                currentUser={currentUser}
+                compact
+              />
             </SectionCard>
 
             <SectionCard
@@ -2071,6 +2430,8 @@ async function deleteEvent(event) {
           tasks={tasks}
           events={events}
           importantDates={importantDates}
+          projects={projects}
+          projectMilestones={projectMilestones}
 
           onCreateEvent={(dateISO) => {
             setEditingEvent({

@@ -40,6 +40,8 @@ export default function CalendarModal({
   tasks = [],
   events = [],
   importantDates = [],
+  projects = [],
+  projectMilestones = [],
   onEditEvent,
   onDeleteEvent,
   onEditTask,
@@ -112,6 +114,25 @@ export default function CalendarModal({
       )
     : [];
 
+  const selectedProjects = selectedDate
+    ? projects.filter(
+        (project) =>
+          project.due_date === selectedDate &&
+          project.status !== "cancelado" &&
+          !project.archived_at &&
+          !project.deleted_at
+      )
+    : [];
+
+  const selectedMilestones = selectedDate
+    ? projectMilestones.filter(
+        (milestone) =>
+          milestone.due_date === selectedDate &&
+          milestone.status !== "concluido" &&
+          !milestone.deleted_at
+      )
+    : [];
+
     const selectedItems = [
         ...selectedEvents.map((event) => ({
             id: `event-${event.id}`,
@@ -146,6 +167,25 @@ export default function CalendarModal({
             title: item.title,
             time: null,
             endTime: null,
+        })),
+
+        ...selectedProjects.map((project) => ({
+          id: `project-${project.id}`,
+          kind: "project",
+          data: project,
+          title: project.title,
+          time: null,
+          endTime: null,
+        })),
+
+        ...selectedMilestones.map((milestone) => ({
+          id: `milestone-${milestone.id}`,
+          kind: "milestone",
+          data: milestone,
+          title: milestone.title,
+          subtitle: milestone.project?.title || "Projeto",
+          time: null,
+          endTime: null,
         })),
         ].sort((a, b) => {
         if (a.time && b.time) {
@@ -243,7 +283,7 @@ export default function CalendarModal({
                 marginTop: 3,
               }}
             >
-              Tarefas e eventos
+              Tarefas, eventos, projetos e datas importantes
             </div>
           </div>
 
@@ -362,6 +402,21 @@ export default function CalendarModal({
 
                 return item.date_value === dateISO;
                 });
+
+              const dayProjects = projects.filter(
+                (project) =>
+                  project.due_date === dateISO &&
+                  project.status !== "cancelado" &&
+                  !project.archived_at &&
+                  !project.deleted_at
+              );
+
+              const dayMilestones = projectMilestones.filter(
+                (milestone) =>
+                  milestone.due_date === dateISO &&
+                  milestone.status !== "concluido" &&
+                  !milestone.deleted_at
+              );
 
               const selected = selectedDate === dateISO;
               const today = todayISO === dateISO;
@@ -565,7 +620,50 @@ export default function CalendarModal({
                       </div>
                     ))}
 
-                    {dayEvents.length + dayTasks.length + dayImportantDates.length > 5 && (
+                    {dayProjects.slice(0, 1).map((project) => (
+                      <div
+                        key={`project-${project.id}`}
+                        style={{
+                          fontSize: 9.5,
+                          padding: "3px 5px",
+                          borderRadius: 5,
+                          background: COLORS.primaryLight,
+                          color: COLORS.primaryDark,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          fontWeight: 650,
+                        }}
+                      >
+                        ◇ {project.title}
+                      </div>
+                    ))}
+
+                    {dayMilestones.slice(0, 1).map((milestone) => (
+                      <div
+                        key={`milestone-${milestone.id}`}
+                        style={{
+                          fontSize: 9.5,
+                          padding: "3px 5px",
+                          borderRadius: 5,
+                          background: COLORS.bg,
+                          color: COLORS.primaryDark,
+                          border: `1px solid ${COLORS.border}`,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        ◆ {milestone.title}
+                      </div>
+                    ))}
+
+                    {dayEvents.length +
+                      dayTasks.length +
+                      dayImportantDates.length +
+                      dayProjects.length +
+                      dayMilestones.length >
+                      5 && (
                       <div
                         style={{
                           fontSize: 9,
@@ -575,8 +673,10 @@ export default function CalendarModal({
                         +
                         {dayEvents.length +
                           dayTasks.length +
-                          dayImportantDates.lengh-
-                          5} itens
+                          dayImportantDates.length +
+                          dayProjects.length +
+                          dayMilestones.length -
+                          5}{" "}
                         itens
                       </div>
                     )}
@@ -615,8 +715,10 @@ export default function CalendarModal({
               </div>
 
               {selectedEvents.length === 0 &&
-              selectedTasks.length === 0  &&
-              selectedImportantDates.length === 0 ?(
+              selectedTasks.length === 0 &&
+              selectedImportantDates.length === 0 &&
+              selectedProjects.length === 0 &&
+              selectedMilestones.length === 0 ? (
                 <div
                   style={{
                     color: COLORS.inkSoft,
@@ -652,27 +754,46 @@ export default function CalendarModal({
                         }}
                     >
                         {selectedItems.map((item) => {
-                        const isEvent = item.kind === "event";
-                        const isTask = item.kind === "task";
-                        const isImportant = item.kind === "important_date";
+                        const isEvent =
+                          item.kind === "event";
+
+                        const isTask =
+                          item.kind === "task";
+
+                        const isImportant =
+                          item.kind === "important_date";
+
+                        const isProject =
+                          item.kind === "project";
+
+                        const isMilestone =
+                          item.kind === "milestone";
 
                         const background = isEvent
-                            ? COLORS.primaryLight
-                            : isTask
-                            ? COLORS.warningLight
-                            : COLORS.successLight;
+                          ? COLORS.primaryLight
+                          : isTask
+                          ? COLORS.warningLight
+                          : isImportant
+                          ? COLORS.successLight
+                          : COLORS.bg;
 
                         const accent = isEvent
-                            ? COLORS.primary
-                            : isTask
-                            ? COLORS.warning
-                            : COLORS.success;
+                          ? COLORS.primary
+                          : isTask
+                          ? COLORS.warning
+                          : isImportant
+                          ? COLORS.success
+                          : COLORS.primaryDark;
 
                         const typeLabel = isEvent
-                            ? "Evento"
-                            : isTask
-                            ? "Tarefa"
-                            : "Data importante";
+                          ? "Evento"
+                          : isTask
+                          ? "Tarefa"
+                          : isImportant
+                          ? "Data importante"
+                          : isProject
+                          ? "Prazo de projeto"
+                          : "Marco de projeto";
 
                         const editItem = () => {
                             if (isEvent) {
@@ -759,18 +880,19 @@ export default function CalendarModal({
                             </div>
 
                             {/* Ações */}
-                            <div
+                            {!isProject && !isMilestone && (
+                              <div
                                 style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 4,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 4,
                                 }}
-                            >
+                              >
                                 <button
-                                type="button"
-                                onClick={editItem}
-                                title="Editar"
-                                style={{
+                                  type="button"
+                                  onClick={editItem}
+                                  title="Editar"
+                                  style={{
                                     width: 29,
                                     height: 29,
                                     border: "none",
@@ -781,16 +903,16 @@ export default function CalendarModal({
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                }}
+                                  }}
                                 >
-                                <Pencil size={14} />
+                                  <Pencil size={14} />
                                 </button>
 
                                 <button
-                                type="button"
-                                onClick={deleteItem}
-                                title="Excluir"
-                                style={{
+                                  type="button"
+                                  onClick={deleteItem}
+                                  title="Excluir"
+                                  style={{
                                     width: 29,
                                     height: 29,
                                     border: "none",
@@ -801,11 +923,12 @@ export default function CalendarModal({
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                }}
+                                  }}
                                 >
-                                <Trash2 size={14} />
+                                  <Trash2 size={14} />
                                 </button>
-                            </div>
+                              </div>
+                            )}
                             </div>
                         );
                         })}

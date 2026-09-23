@@ -136,8 +136,8 @@ function StatCard({ title, value, subtitle, icon: Icon, tone = "primary" }) {
       style={{
         background: COLORS.surface,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
-        padding: 15,
+        borderRadius: 12,
+        padding: 13,
       }}
       
     >
@@ -162,7 +162,7 @@ function StatCard({ title, value, subtitle, icon: Icon, tone = "primary" }) {
 
           <div
             style={{
-              fontSize: 21,
+              fontSize: 19,
               fontWeight: 750,
               color: COLORS.ink,
             }}
@@ -185,9 +185,9 @@ function StatCard({ title, value, subtitle, icon: Icon, tone = "primary" }) {
 
         <div
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
+            width: 30,
+            height: 30,
+            borderRadius: 8,
             background: currentTone.bg,
             color: currentTone.color,
             display: "flex",
@@ -196,7 +196,7 @@ function StatCard({ title, value, subtitle, icon: Icon, tone = "primary" }) {
             flexShrink: 0,
           }}
         >
-          <Icon size={18} />
+          <Icon size={16} />
         </div>
       </div>
     </div>
@@ -209,8 +209,8 @@ function SectionCard({ title, icon: Icon, action, children }) {
       style={{
         background: COLORS.surface,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
-        padding: 15,
+        borderRadius: 12,
+        padding: 14,
       }}
     >
       <div
@@ -218,8 +218,8 @@ function SectionCard({ title, icon: Icon, action, children }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          gap: 12,
-          marginBottom: 13,
+          gap: 10,
+          marginBottom: 11,
         }}
       >
         <div
@@ -2961,7 +2961,7 @@ export default function FinancePage({ currentUser }) {
     <div
       style={{
         width: "100%",
-        maxWidth: 1500,
+        maxWidth: 1250,
         margin: "0 auto",
       }}
     >
@@ -2973,14 +2973,15 @@ export default function FinancePage({ currentUser }) {
           alignItems: "flex-start",
           gap: 14,
           flexWrap: "wrap",
-          marginBottom: 18,
+          marginBottom: 12,
         }}
       >
         <div>
           <h1
             style={{
               margin: 0,
-              fontSize: 23,
+              fontSize: 20,
+              letterSpacing: "-0.3px",
               color: COLORS.ink,
             }}
           >
@@ -3012,7 +3013,7 @@ export default function FinancePage({ currentUser }) {
               background: COLORS.successLight,
               color: COLORS.success,
               borderRadius: 9,
-              padding: "8px 12px",
+              padding: "7px 10px",
               cursor: "pointer",
               fontSize: 11,
               fontWeight: 650,
@@ -3072,7 +3073,7 @@ export default function FinancePage({ currentUser }) {
               background: COLORS.surface,
               color: COLORS.ink,
               borderRadius: 8,
-              padding: "7px 11px",
+              padding: "6px 9px",
               cursor: "pointer",
               fontSize: 15,
             }}
@@ -3082,7 +3083,7 @@ export default function FinancePage({ currentUser }) {
 
           <div
             style={{
-              minWidth: 170,
+              minWidth: 145,
               textAlign: "center",
               fontWeight: 700,
               color: COLORS.ink,

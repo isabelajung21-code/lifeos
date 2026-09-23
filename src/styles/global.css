@@ -38,6 +38,40 @@ body {
   overflow-x: hidden;
 }
 
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 12px;
+  }
+}
+
 .home-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -61,8 +95,81 @@ body {
   display: none;
 }
 
+.home-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.home-quick-action {
+  border: 1px solid #dbe5f0;
+  background: #ffffff;
+  color: #25313d;
+  border-radius: 8px;
+  padding: 6px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.home-quick-action:hover {
+  background: #edf4fc;
+  border-color: #b9d0e8;
+}
+
+.home-grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.home-grid-three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.home-attention-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: start;
+}
+
+.home-attention-item,
+.home-attention-ok {
+  border-radius: 8px;
+  padding: 9px 10px;
+  min-width: 0;
+}
+
+.home-attention-item.danger {
+  background: #fdecec;
+}
+
+.home-attention-item.warning {
+  background: #fff5dd;
+}
+
+.home-attention-ok {
+  background: #e9f7ef;
+  color: #347854;
+  font-size: 11px;
+}
+
 @media (max-width: 1100px) {
   .home-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-grid-three {
+    grid-template-columns: 1fr;
+  }
+  .home-attention-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -76,12 +183,19 @@ body {
   .home-grid {
     grid-template-columns: 1fr;
   }
+  .home-grid-two,
+  .home-grid-three {
+    grid-template-columns: 1fr;
+  }
+  .home-attention-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
   .home-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
+    gap: 8px;
   }
 }
 

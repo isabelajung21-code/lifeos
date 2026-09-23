@@ -1,5 +1,6 @@
 import {
   Home,
+  CalendarDays,
   BriefcaseBusiness,
   FolderKanban,
   WalletCards,
@@ -8,7 +9,12 @@ import {
   Clapperboard,
   GraduationCap,
   Popcorn,
+  Inbox,
+  Repeat2,
+  ListChecks,
+  FileText,
   Bell,
+  BookHeart,
   Trash2
 } from "lucide-react";
 
@@ -16,6 +22,12 @@ import { COLORS } from "../../constants/theme";
 
 const items = [
   { id: "home", label: "Início", icon: Home },
+  { id: "agenda", label: "Agenda", icon: CalendarDays },
+  { id: "inbox", label: "Caixa de Entrada", icon: Inbox },
+  { id: "habits", label: "Hábitos e Rotinas", icon: Repeat2 },
+  { id: "journal", label: "Diário", icon: BookHeart },
+  { id: "lists", label: "Listas", icon: ListChecks },
+  { id: "documents", label: "Documentos", icon: FileText },
   { id: "work", label: "Trabalho", icon: BriefcaseBusiness },
   { id: "projects", label: "Projetos", icon: FolderKanban },
   { id: "finance", label: "Financeiro", icon: WalletCards },
@@ -37,26 +49,28 @@ export default function Sidebar({
   return (
     <aside
       style={{
-        width: 250,
+        width: 220,
         minHeight: "100vh",
         background: COLORS.surface,
         borderRight: `1px solid ${COLORS.border}`,
-        padding: "24px 16px",
+        padding: "18px 12px",
         display: "flex",
         flexDirection: "column",
         position: "fixed",
         left: 0,
         top: 0,
         bottom: 0,
+        overflowY: "auto",
+        boxSizing: "border-box",
       }}
     >
-      <div style={{ padding: "0 10px 26px" }}>
+      <div style={{ padding: "0 8px 18px" }}>
         <div
           style={{
-            fontSize: 27,
+            fontSize: 22,
             fontWeight: 800,
             color: COLORS.primaryDark,
-            letterSpacing: "-1px",
+            letterSpacing: "-0.6px",
           }}
         >
           lifeOS
@@ -66,7 +80,7 @@ export default function Sidebar({
           style={{
             marginTop: 3,
             color: COLORS.inkSoft,
-            fontSize: 12,
+            fontSize: 11,
           }}
         >
           sua vida, organizada
@@ -77,7 +91,7 @@ export default function Sidebar({
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 5,
+          gap: 3,
           flex: 1,
         }}
       >
@@ -92,18 +106,19 @@ export default function Sidebar({
               style={{
                 border: 0,
                 width: "100%",
-                padding: "11px 12px",
-                borderRadius: 10,
+                padding: "7px 9px",
+                borderRadius: 9,
                 display: "flex",
                 alignItems: "center",
-                gap: 11,
+                gap: 8,
                 textAlign: "left",
                 background: active ? COLORS.primaryLight : "transparent",
                 color: active ? COLORS.primaryDark : COLORS.ink,
                 fontWeight: active ? 700 : 500,
+                fontSize: 12,
               }}
             >
-              <Icon size={19} strokeWidth={active ? 2.3 : 1.8} />
+              <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
               {item.label}
             </button>
           );
@@ -116,14 +131,15 @@ export default function Sidebar({
           background: "transparent",
           display: "flex",
           alignItems: "center",
-          gap: 10,
-          padding: "12px",
+          gap: 8,
+          padding: "8px 9px",
           borderRadius: 10,
           color: COLORS.ink,
           marginBottom: 8,
+          fontSize: 12,
         }}
       >
-        <Bell size={19} />
+        <Bell size={17} />
         Notificações
       </button>
 

@@ -6,12 +6,12 @@ export default function MobileHeader({ onMenu }) {
     <header
       className="mobile-header"
       style={{
-        height: 62,
+        height: 54,
         background: COLORS.surface,
         borderBottom: `1px solid ${COLORS.border}`,
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 16px",
+        padding: "0 12px",
         position: "sticky",
         top: 0,
         zIndex: 20,
@@ -26,13 +26,13 @@ export default function MobileHeader({ onMenu }) {
           padding: 5,
         }}
       >
-        <Menu size={23} />
+        <Menu size={20} />
       </button>
 
       <div
         style={{
           fontWeight: 800,
-          fontSize: 21,
+          fontSize: 18,
           color: COLORS.primaryDark,
         }}
       >
@@ -44,10 +44,13 @@ export default function MobileHeader({ onMenu }) {
           border: 0,
           background: "transparent",
           color: COLORS.ink,
-          padding: 5,
+          padding: 6,
+          borderRadius: 8,
+          display: "grid",
+          placeItems: "center",
         }}
       >
-        <Bell size={21} />
+        <Bell size={19} />
       </button>
     </header>
   );
