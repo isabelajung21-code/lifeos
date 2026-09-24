@@ -9,6 +9,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  X,
   WalletCards,
   CalendarDays,
 } from "lucide-react";
@@ -108,7 +109,7 @@ function addRecurrenceDate(date, frequency, intervalValue = 1) {
   return next;
 }
 
-function StatCard({ title, value, subtitle, icon: Icon, tone = "primary" }) {
+function StatCard({ title, value, subtitle, icon: Icon, tone = "primary", onIconClick }) {
   const toneMap = {
     primary: {
       bg: COLORS.primaryLight,
@@ -183,7 +184,11 @@ function StatCard({ title, value, subtitle, icon: Icon, tone = "primary" }) {
           )}
         </div>
 
-        <div
+        <button
+          type="button"
+          onClick={onIconClick}
+          title={`Ver lançamentos: ${title}`}
+          aria-label={`Ver lançamentos de ${title}`}
           style={{
             width: 30,
             height: 30,
@@ -194,10 +199,12 @@ function StatCard({ title, value, subtitle, icon: Icon, tone = "primary" }) {
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
+            border: "none",
+            cursor: "pointer",
           }}
         >
           <Icon size={16} />
-        </div>
+        </button>
       </div>
     </div>
   );
@@ -357,6 +364,7 @@ export default function FinancePage({ currentUser }) {
   const [payInvoiceOpen, setPayInvoiceOpen] = useState(false);
 
   const [invoiceOffset, setInvoiceOffset] = useState(0);
+  const [activeSummaryCard, setActiveSummaryCard] = useState(null);
   const [subscriptionModalOpen, setSubscriptionModalOpen] =
     useState(false);
 
@@ -983,6 +991,8 @@ export default function FinancePage({ currentUser }) {
 
     const monthStart = new Date(`${range.start}T12:00:00`);
     const monthEnd = new Date(`${range.end}T12:00:00`);
+    const planningHorizon = new Date(monthEnd);
+    planningHorizon.setDate(planningHorizon.getDate() + 7);
 
     const projections = [];
 
@@ -1000,14 +1010,14 @@ export default function FinancePage({ currentUser }) {
       let safety = 0;
 
       while (
-        occurrenceDate <= monthEnd &&
+        occurrenceDate <= planningHorizon &&
         safety < 1000
       ) {
         safety += 1;
 
         if (
           occurrenceDate >= monthStart &&
-          occurrenceDate <= monthEnd &&
+          occurrenceDate <= planningHorizon &&
           (!recurrenceEnd ||
             occurrenceDate <= recurrenceEnd)
         ) {
@@ -1102,7 +1112,10 @@ export default function FinancePage({ currentUser }) {
   const monthTransactionsWithProjections = useMemo(() => {
     return [
       ...selectedMonthTransactions,
-      ...projectedRecurrenceTransactions,
+      ...projectedRecurrenceTransactions.filter((transaction) =>
+        transaction.transaction_date.slice(0, 7) ===
+        `${selectedMonth.year}-${String(selectedMonth.month + 1).padStart(2, "0")}`
+      ),
     ].sort((a, b) =>
       String(b.transaction_date).localeCompare(
         String(a.transaction_date)
@@ -1111,6 +1124,8 @@ export default function FinancePage({ currentUser }) {
   }, [
     selectedMonthTransactions,
     projectedRecurrenceTransactions,
+    selectedMonth.year,
+    selectedMonth.month,
   ]);
 
   // ======================================================
@@ -1127,11 +1142,52 @@ export default function FinancePage({ currentUser }) {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
 
-    const activeTransactions =
-      monthTransactionsWithProjections.filter(
-        (transaction) =>
-          transaction.status !== "cancelado"
+    const dateISO = (date) => [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    const activeTransactions = [
+      ...monthTransactionsWithProjections,
+      ...transactions.filter((transaction) =>
+        transaction.transaction_date > dateISO(lastDay) &&
+        transaction.transaction_date <= dateISO(
+          new Date(year, month + 1, 7, 12)
+        )
+      ),
+      ...projectedRecurrenceTransactions.filter((transaction) =>
+        transaction.transaction_date > dateISO(lastDay)
+      ),
+    ].filter(
+      (transaction) =>
+        transaction.status !== "cancelado" &&
+        // A compra aparece na fatura; o pagamento da fatura
+        // é a saída que deve aparecer no controle semanal.
+        !(transaction.type === "despesa" && transaction.card_id)
+    );
+
+    // Uma conta de segunda a quinta precisa estar reservada na
+    // semana do pagamento recebido na sexta-feira anterior.
+    // A data original continua sendo a data de vencimento exibida.
+    const planningDate = (transaction) => {
+      const dueDate = new Date(
+        `${transaction.transaction_date}T12:00:00`
       );
+
+      if (
+        transaction.type === "despesa" &&
+        !transaction.card_id &&
+        dueDate.getDay() >= 1 &&
+        dueDate.getDay() <= 4
+      ) {
+        dueDate.setDate(dueDate.getDate() - 7);
+      }
+
+      // Se o vencimento cai no começo do mês, a reserva pertence
+      // ao mês anterior. A busca semanal inclui esses próximos dias.
+      return dueDate;
+    };
 
     // Saldo real atual de todas as contas
     const currentAccountsBalance = accounts.reduce(
@@ -1178,8 +1234,7 @@ export default function FinancePage({ currentUser }) {
       const weekTransactions =
         activeTransactions
           .filter((transaction) => {
-            const date =
-              transaction.transaction_date;
+            const date = dateISO(planningDate(transaction));
 
             return (
               date >= startISO &&
@@ -1246,14 +1301,23 @@ export default function FinancePage({ currentUser }) {
     * Para projetar o mês sem contar novamente valores
     * que já estão incorporados ao saldo atual:
     *
-    * - semanas totalmente passadas não alteram o saldo;
-    * - na semana atual, consideramos apenas movimentações
-    *   ainda não realizadas a partir de hoje;
+    * - pendências de semanas passadas entram na projeção
+    *   da semana atual, sem alterar o saldo de semanas passadas;
     * - semanas futuras entram normalmente.
     */
 
     let runningBalance =
       currentAccountsBalance;
+
+    const overdueTransactions = weeks
+      .filter((week) => week.end < today)
+      .flatMap((week) => week.transactions)
+      .filter((transaction) =>
+        transaction.type === "receita"
+          ? transaction.status !== "recebido"
+          : transaction.type === "despesa" &&
+            transaction.status !== "pago"
+      );
 
     return weeks.map((week) => {
       const startingBalance =
@@ -1262,11 +1326,10 @@ export default function FinancePage({ currentUser }) {
       const projectedTransactions =
         week.transactions.filter(
           (transaction) => {
-            const transactionDate =
-              new Date(
-                `${transaction.transaction_date}T12:00:00`
-              );
-
+            // Compras no cartão só saem da conta quando a fatura é paga.
+            if (transaction.type === "despesa" && transaction.card_id) {
+              return false;
+            }
             // Semana passada
             if (week.end < today) {
               return false;
@@ -1287,17 +1350,21 @@ export default function FinancePage({ currentUser }) {
               return false;
             }
 
-            // Na semana atual não projetar algo de dias anteriores
-            if (
-              week.isCurrentWeek &&
-              transactionDate < today
-            ) {
-              return false;
-            }
-
             return true;
           }
         );
+
+      // Vencimentos em atraso continuam afetando o saldo futuro.
+      // Já realizados estão incorporados ao saldo das contas.
+      if (week.isCurrentWeek) {
+        projectedTransactions.push(
+          ...overdueTransactions.filter(
+            (transaction) =>
+              transaction.type !== "despesa" ||
+              !transaction.card_id
+          )
+        );
+      }
 
       const projectedRevenue =
         projectedTransactions
@@ -1345,6 +1412,7 @@ export default function FinancePage({ currentUser }) {
     selectedMonth.year,
     selectedMonth.month,
     monthTransactionsWithProjections,
+    projectedRecurrenceTransactions,
     accounts,
     transactions,
   ]);
@@ -1594,6 +1662,14 @@ export default function FinancePage({ currentUser }) {
   }
 
   function openEditTransaction(transaction) {
+    if (
+      transaction.card_id &&
+      (getTransactionPaidAmount(transaction.id) > 0 ||
+        transaction.status === "pago")
+    ) {
+      alert("Esta compra já tem pagamento vinculado. Desfaça o pagamento da fatura antes de editá-la.");
+      return;
+    }
     setEditingTransaction(transaction);
     setNewTransactionType(transaction.type);
     setTransactionModalOpen(true);
@@ -2035,6 +2111,14 @@ export default function FinancePage({ currentUser }) {
 
   async function deleteTransaction(transaction) {
     try {
+      if (
+        transaction.card_id &&
+        (getTransactionPaidAmount(transaction.id) > 0 ||
+          transaction.status === "pago")
+      ) {
+        alert("Esta compra já tem pagamento vinculado. Desfaça o pagamento da fatura antes de excluí-la.");
+        return;
+      }
       const { data: user, error: userError } =
         await supabase
           .from("users")
@@ -2294,7 +2378,8 @@ export default function FinancePage({ currentUser }) {
         (transaction) =>
           transaction.status !== "cancelado" &&
           transaction.type === "despesa" &&
-          transaction.status !== "pago"
+          transaction.status !== "pago" &&
+          !transaction.card_id
       )
       .reduce(
         (sum, transaction) =>
@@ -2307,6 +2392,34 @@ export default function FinancePage({ currentUser }) {
     currentTotalBalance +
     futureExpectedRevenue -
     futureExpectedExpenses;
+
+  const summaryTransactions = {
+    atual: transactions.filter(
+      (item) =>
+        item.status !== "cancelado" &&
+        ((item.type === "receita" && item.status === "recebido") ||
+          (item.type === "despesa" && item.status === "pago" && !item.card_id))
+    ),
+    receitas: monthTransactionsWithProjections.filter(
+      (item) => item.status !== "cancelado" && item.type === "receita"
+    ),
+    despesas: monthTransactionsWithProjections.filter(
+      (item) => item.status !== "cancelado" && item.type === "despesa"
+    ),
+    projetado: monthTransactionsWithProjections.filter(
+      (item) =>
+        item.status !== "cancelado" &&
+        ((item.type === "receita" && item.status !== "recebido") ||
+          (item.type === "despesa" && item.status !== "pago" && !item.card_id))
+    ),
+  };
+
+  const summaryTitles = {
+    atual: "Movimentações do saldo atual",
+    receitas: "Receitas do mês",
+    despesas: "Despesas do mês",
+    projetado: "Entradas e saídas do saldo projetado",
+  };
 
   const currentMonthLabel = new Date().toLocaleDateString("pt-BR", {
     month: "long",
@@ -2367,7 +2480,7 @@ export default function FinancePage({ currentUser }) {
             item.account_id === account.id &&
             (
             (item.type === "receita" && item.status === "recebido") ||
-            (item.type === "despesa" && item.status === "pago")
+            (item.type === "despesa" && item.status === "pago" && !item.card_id)
             ) &&
             item.status !== "cancelado"
         )
@@ -3177,6 +3290,7 @@ export default function FinancePage({ currentUser }) {
           value={money(currentBalance)}
           subtitle="Receitas recebidas − despesas pagas"
           icon={Banknote}
+          onIconClick={() => setActiveSummaryCard("atual")}
           tone={
             currentBalance >= 0
               ? "primary"
@@ -3191,6 +3305,7 @@ export default function FinancePage({ currentUser }) {
             monthData.expectedRevenue
           )}`}
           icon={ArrowUpCircle}
+          onIconClick={() => setActiveSummaryCard("receitas")}
           tone="success"
         />
 
@@ -3201,6 +3316,7 @@ export default function FinancePage({ currentUser }) {
             monthData.expectedExpenses
           )}`}
           icon={ArrowDownCircle}
+          onIconClick={() => setActiveSummaryCard("despesas")}
           tone="danger"
         />
 
@@ -3209,6 +3325,7 @@ export default function FinancePage({ currentUser }) {
           value={money(projectedAccountBalance)}
           subtitle="Saldo atual + entradas futuras − saídas futuras"
           icon={CalendarClock}
+          onIconClick={() => setActiveSummaryCard("projetado")}
           tone={
             monthData.projectedBalance >= 0
               ? "primary"
@@ -3216,6 +3333,100 @@ export default function FinancePage({ currentUser }) {
           }
         />
       </div>
+
+      {activeSummaryCard && (
+        <div
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setActiveSummaryCard(null);
+          }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 10000,
+            background: "rgba(25,35,45,.42)", display: "flex",
+            alignItems: "center", justifyContent: "center", padding: 16,
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label={summaryTitles[activeSummaryCard]}
+            style={{
+              width: "min(620px, 100%)", maxHeight: "85vh", overflowY: "auto",
+              background: COLORS.surface, borderRadius: 14, padding: 18,
+              boxShadow: "0 20px 55px rgba(0,0,0,.2)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              <h3 style={{ margin: 0, color: COLORS.ink, fontSize: 17 }}>
+                {summaryTitles[activeSummaryCard]}
+              </h3>
+              <button type="button" onClick={() => setActiveSummaryCard(null)} aria-label="Fechar"
+                style={{ border: "none", background: COLORS.bg, borderRadius: 8, padding: 7, cursor: "pointer" }}>
+                <X size={17} />
+              </button>
+            </div>
+
+            {activeSummaryCard === "atual" && (
+              <p style={{ color: COLORS.inkSoft, fontSize: 11 }}>
+                Saldo inicial das contas: {money(accountInitialBalance)}. Abaixo, todas as movimentações realizadas que alteram esse saldo.
+              </p>
+            )}
+            {activeSummaryCard === "projetado" && (
+              <p style={{ color: COLORS.inkSoft, fontSize: 11 }}>
+                Saldo atual: {money(currentTotalBalance)}. Abaixo, entradas e saídas ainda pendentes neste mês. Compras no cartão entram somente quando a fatura é paga.
+              </p>
+            )}
+            {(activeSummaryCard === "receitas" || activeSummaryCard === "despesas") && (
+              <p style={{ color: COLORS.inkSoft, fontSize: 11 }}>
+                Lançamentos do mês, realizados e previstos. Compras no cartão aparecem nas despesas, mas só afetam o saldo da conta no pagamento da fatura.
+              </p>
+            )}
+
+            {summaryTransactions[activeSummaryCard].length === 0 ? (
+              <p style={{ color: COLORS.inkSoft, fontSize: 12 }}>Nenhum lançamento nesta lista.</p>
+            ) : summaryTransactions[activeSummaryCard]
+              .slice()
+              .sort((a, b) => String(b.transaction_date).localeCompare(String(a.transaction_date)))
+              .map((transaction) => (
+                <div key={transaction.id} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  flexWrap: "wrap", gap: 8, borderBottom: `1px solid ${COLORS.border}`,
+                  padding: "10px 0",
+                }}>
+                  <div style={{ minWidth: 140, flex: "1 1 160px" }}>
+                    <div style={{ fontWeight: 650, color: COLORS.ink, fontSize: 12 }}>{transaction.title}</div>
+                    <div style={{ color: COLORS.inkSoft, fontSize: 10 }}>
+                      {formatDate(transaction.transaction_date)} · {transaction.status}
+                      {transaction.card?.name ? ` · ${transaction.card.name}` : ""}
+                      {transaction.is_projection ? " · Projeção" : ""}
+                    </div>
+                  </div>
+                  <strong style={{ color: transaction.type === "receita" ? COLORS.success : COLORS.danger, fontSize: 12 }}>
+                    {transaction.type === "receita" ? "+" : "−"}{money(transaction.amount)}
+                  </strong>
+                  <div style={{ display: "flex", gap: 5 }}>
+                    <button type="button" aria-label={`Editar ${transaction.title}`} title="Editar"
+                      onClick={() => {
+                        setActiveSummaryCard(null);
+                        openEditTransaction(transaction);
+                      }}
+                      style={{ border: "none", borderRadius: 7, background: COLORS.bg, color: COLORS.primaryDark, padding: 7, cursor: "pointer" }}>
+                      <Pencil size={14} />
+                    </button>
+                    <button type="button" aria-label={`Excluir ${transaction.title}`} title="Excluir"
+                      onClick={() => {
+                        if (transaction.recurrence_id) deleteProjectedRecurrence(transaction);
+                        else deleteTransaction(transaction);
+                      }}
+                      style={{ border: "none", borderRadius: 7, background: COLORS.dangerLight, color: COLORS.danger, padding: 7, cursor: "pointer" }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </section>
+        </div>
+      )}
 
     {/* Controle semanal */}
     <div style={{ marginBottom: 14 }}>
@@ -3496,7 +3707,8 @@ export default function FinancePage({ currentUser }) {
                       letterSpacing: 0.4,
                     }}
                   >
-                    Movimentações da semana
+                    Movimentações da semana · contas de segunda a quinta
+                    reservadas na semana anterior
                   </div>
 
                   {week.transactions.length ===
@@ -3605,6 +3817,17 @@ export default function FinancePage({ currentUser }) {
                                     : transaction.is_projection
                                       ? "Projeção"
                                       : "Previsto"}
+                                  {!realized &&
+                                    transaction.type === "despesa" &&
+                                    !transaction.card_id &&
+                                    (() => {
+                                      const dueDate = new Date(
+                                        `${transaction.transaction_date}T12:00:00`
+                                      );
+                                      return dueDate.getDay() >= 1 &&
+                                        dueDate.getDay() <= 4 &&
+                                        transaction.transaction_date > week.endISO;
+                                    })() && " · reservado nesta semana"}
                                 </div>
                               </div>
 
@@ -6038,6 +6261,31 @@ export default function FinancePage({ currentUser }) {
           dueDate={selectedCardDueDate}
           onPayInvoice={() => {
             setPayInvoiceOpen(true);
+          }}
+          onEditTransaction={(transaction) => {
+            if (
+              getTransactionPaidAmount(transaction.id) > 0 ||
+              transaction.status === "pago"
+            ) {
+              openEditTransaction(transaction);
+              return;
+            }
+            setInvoiceModalOpen(false);
+            openEditTransaction(transaction);
+          }}
+          onDeleteTransaction={(transaction) => {
+            if (
+              getTransactionPaidAmount(transaction.id) > 0 ||
+              transaction.status === "pago"
+            ) {
+              alert("Esta compra já tem pagamento vinculado. Desfaça o pagamento da fatura antes de excluí-la.");
+              return;
+            }
+            if (transaction.recurrence_id) {
+              deleteProjectedRecurrence(transaction);
+            } else {
+              deleteTransaction(transaction);
+            }
           }}
           invoiceOffset={invoiceOffset}
           onPreviousInvoice={() => {

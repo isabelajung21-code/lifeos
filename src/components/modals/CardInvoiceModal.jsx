@@ -2,6 +2,8 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  Pencil,
+  Trash2,
   X,
 } from "lucide-react";
 import { COLORS } from "../../constants/theme";
@@ -15,6 +17,8 @@ export default function CardInvoiceModal({
   available,
   dueDate,
   onPayInvoice,
+  onEditTransaction,
+  onDeleteTransaction,
   invoiceOffset,
   onPreviousInvoice,
   onNextInvoice,
@@ -306,7 +310,7 @@ export default function CardInvoiceModal({
                 style={{
                   display: "grid",
                   gridTemplateColumns:
-                    "90px minmax(0, 1fr) 90px 110px",
+                    "65px minmax(0, 1fr) auto",
                   alignItems: "center",
                   gap: 10,
                   padding: "12px 14px",
@@ -353,19 +357,13 @@ export default function CardInvoiceModal({
                       {item.total_installments}
                     </div>
                   )}
-                </div>
-
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: COLORS.inkSoft,
-                  }}
-                >
-                  {item.status === "previsto"
-                    ? "Previsto"
-                    : item.status === "pago"
-                    ? "Pago"
-                    : item.status}
+                  <div style={{ fontSize: 10, color: COLORS.inkSoft, marginTop: 3 }}>
+                    {item.status === "previsto"
+                      ? "Previsto"
+                      : item.status === "pago"
+                        ? "Pago"
+                        : item.status}
+                  </div>
                 </div>
 
                 <div
@@ -377,6 +375,27 @@ export default function CardInvoiceModal({
                   }}
                 >
                   {money(item.amount)}
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 5 }}>
+                    <button
+                      type="button"
+                      title="Editar compra"
+                      aria-label={`Editar ${item.title}`}
+                      onClick={() => onEditTransaction?.(item)}
+                      style={{ border: `1px solid ${COLORS.border}`, borderRadius: 7, background: COLORS.bg, color: COLORS.primaryDark, padding: 6, cursor: "pointer" }}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Excluir compra"
+                      aria-label={`Excluir ${item.title}`}
+                      onClick={() => onDeleteTransaction?.(item)}
+                      style={{ border: `1px solid ${COLORS.border}`, borderRadius: 7, background: COLORS.dangerLight, color: COLORS.danger, padding: 6, cursor: "pointer" }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
 
                   {Number(item.paidAmount || 0) > 0 &&
                     Number(item.remainingAmount || 0) > 0 && (
