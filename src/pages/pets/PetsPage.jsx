@@ -23,6 +23,7 @@ import PetHealthPlanModal from "../../components/modals/PetHealthPlanModal";
 import PetWeightModal from "../../components/modals/PetWeightModal";
 import PetAppointmentModal from "../../components/modals/PetAppointmentModal";
 import TransactionModal from "../../components/modals/TransactionModal";
+import PetModal from "../../components/modals/PetModal";
 
 
 
@@ -318,6 +319,8 @@ function InfoItem({ label, value }) {
 
 export default function PetsPage({ currentUser }) {
   const [pets, setPets] = useState([]);
+  const [petModalOpen, setPetModalOpen] =
+    useState(false);
   const [selectedPetId, setSelectedPetId] =
     useState(null);
 
@@ -1414,6 +1417,68 @@ export default function PetsPage({ currentUser }) {
       }
     }
 
+  
+  function openEditPet() {
+    if (!selectedPet) return;
+    setPetModalOpen(true);
+  }
+
+  async function deletePet() {
+    if (!selectedPet) return;
+
+
+    try {
+      let userId = null;
+
+      if (currentUser) {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("id")
+          .ilike("name", currentUser)
+          .maybeSingle();
+
+        userId = userData?.id || null;
+      }
+
+      const deletedAt = new Date().toISOString();
+
+      const { error } = await supabase
+        .from("pets")
+        .update({
+          deleted_at: deletedAt,
+          deleted_by: userId,
+          updated_at: deletedAt,
+        })
+        .eq("id", selectedPet.id);
+
+      if (error) throw error;
+
+      await supabase.from("activity_logs").insert({
+        user_id: userId,
+        module: "Pets",
+        action: "deleted",
+        entity_type: "pet",
+        entity_id: selectedPet.id,
+        entity_name: selectedPet.name,
+        details: {
+          message: `Moveu ${selectedPet.name} para a Lixeira`,
+          pet_id: selectedPet.id,
+          pet_name: selectedPet.name,
+        },
+      });
+
+      setSelectedPetId(null);
+
+      await loadPets();
+    } catch (error) {
+      console.error("Erro ao excluir pet:", error);
+
+      alert(
+        "Não foi possível mover o pet para a Lixeira."
+      );
+    }
+  }
+
 
 
   if (loading) {
@@ -1724,17 +1789,70 @@ export default function PetsPage({ currentUser }) {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
-                  padding: "6px 9px",
-                  borderRadius: 999,
-                  background: "#EAF7F1",
-                  color: "#27845D",
-                  fontSize: 11,
-                  fontWeight: 700,
+                  gap: 8,
+                  flexWrap: "wrap",
                 }}
               >
-                <HeartPulse size={14} />
-                Perfil ativo
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 9px",
+                    borderRadius: 999,
+                    background: "#EAF7F1",
+                    color: "#27845D",
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  <HeartPulse size={14} />
+                  Perfil ativo
+                </div>
+
+                <button
+                  type="button"
+                  onClick={openEditPet}
+                  title="Editar pet"
+                  style={{
+                    border: `1px solid ${COLORS.border}`,
+                    background: "#fff",
+                    color: COLORS.primary,
+                    borderRadius: 9,
+                    padding: "7px 9px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  <Pencil size={14} />
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={deletePet}
+                  title="Excluir pet"
+                  style={{
+                    border: `1px solid ${COLORS.border}`,
+                    background: "#fff",
+                    color: "#D64545",
+                    borderRadius: 9,
+                    padding: "7px 9px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  <Trash2 size={14} />
+                  Excluir
+                </button>
               </div>
             </div>
 
@@ -3900,6 +4018,16 @@ export default function PetsPage({ currentUser }) {
           </div>
         </>
       )}
+
+      <PetModal
+        open={petModalOpen}
+        onClose={() => {
+          setPetModalOpen(false);
+        }}
+        pet={selectedPet}
+        currentUser={currentUser}
+        onSaved={loadPets}
+      />
       <PetVaccinationModal
         open={vaccinationModalOpen}
         onClose={() => {
