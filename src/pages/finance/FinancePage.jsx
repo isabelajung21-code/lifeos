@@ -989,7 +989,13 @@ export default function FinancePage({ currentUser }) {
       selectedMonth.month
     );
 
-    const monthStart = new Date(`${range.start}T12:00:00`);
+    const currentMonthStart = new Date();
+    currentMonthStart.setDate(1);
+    currentMonthStart.setHours(12, 0, 0, 0);
+    const selectedMonthStart = new Date(`${range.start}T12:00:00`);
+    const monthStart = selectedMonthStart < currentMonthStart
+      ? selectedMonthStart
+      : currentMonthStart;
     const monthEnd = new Date(`${range.end}T12:00:00`);
     const planningHorizon = new Date(monthEnd);
     planningHorizon.setDate(planningHorizon.getDate() + 7);
@@ -1196,6 +1202,26 @@ export default function FinancePage({ currentUser }) {
       0
     );
 
+    // A primeira semana do mês continua do saldo previsto dos meses
+    // anteriores. Vencimentos de segunda a quinta no início do mês
+    // já foram reservados na última semana do mês anterior.
+    const previousPendingBalance = [
+      ...transactions,
+      ...projectedRecurrenceTransactions,
+    ]
+      .filter((transaction) =>
+        transaction.status !== "cancelado" &&
+        planningDate(transaction) < firstDay &&
+        ((transaction.type === "receita" && transaction.status !== "recebido") ||
+          (transaction.type === "despesa" && transaction.status !== "pago" && !transaction.card_id))
+      )
+      .reduce(
+        (sum, transaction) =>
+          sum + (transaction.type === "receita" ? 1 : -1) *
+            Number(transaction.amount || 0),
+        0
+      );
+
     const weeks = [];
 
     let cursor = new Date(firstDay);
@@ -1307,7 +1333,7 @@ export default function FinancePage({ currentUser }) {
     */
 
     let runningBalance =
-      currentAccountsBalance;
+      currentAccountsBalance + previousPendingBalance;
 
     const overdueTransactions = weeks
       .filter((week) => week.end < today)
@@ -2357,14 +2383,29 @@ export default function FinancePage({ currentUser }) {
     0
   );
 
-  // Apenas valores que ainda vão entrar/sair
+  // Todas as entradas e saídas pendentes até o fim do mês
+  // selecionado. Assim cada mês herda o resultado do anterior.
+  const projectedMonthEnd = getMonthRange(
+    selectedMonth.year,
+    selectedMonth.month
+  ).end;
+
+  const cumulativePendingTransactions = [
+    ...transactions,
+    ...projectedRecurrenceTransactions,
+  ].filter(
+    (transaction) =>
+      transaction.transaction_date <= projectedMonthEnd &&
+      transaction.status !== "cancelado" &&
+      ((transaction.type === "receita" && transaction.status !== "recebido") ||
+        (transaction.type === "despesa" && transaction.status !== "pago" && !transaction.card_id))
+  );
+
   const futureExpectedRevenue =
-    monthTransactionsWithProjections
+    cumulativePendingTransactions
       .filter(
         (transaction) =>
-          transaction.status !== "cancelado" &&
-          transaction.type === "receita" &&
-          transaction.status !== "recebido"
+          transaction.type === "receita"
       )
       .reduce(
         (sum, transaction) =>
@@ -2373,13 +2414,10 @@ export default function FinancePage({ currentUser }) {
       );
 
   const futureExpectedExpenses =
-    monthTransactionsWithProjections
+    cumulativePendingTransactions
       .filter(
         (transaction) =>
-          transaction.status !== "cancelado" &&
-          transaction.type === "despesa" &&
-          transaction.status !== "pago" &&
-          !transaction.card_id
+          transaction.type === "despesa"
       )
       .reduce(
         (sum, transaction) =>
@@ -2406,19 +2444,14 @@ export default function FinancePage({ currentUser }) {
     despesas: monthTransactionsWithProjections.filter(
       (item) => item.status !== "cancelado" && item.type === "despesa"
     ),
-    projetado: monthTransactionsWithProjections.filter(
-      (item) =>
-        item.status !== "cancelado" &&
-        ((item.type === "receita" && item.status !== "recebido") ||
-          (item.type === "despesa" && item.status !== "pago" && !item.card_id))
-    ),
+    projetado: cumulativePendingTransactions,
   };
 
   const summaryTitles = {
     atual: "Movimentações do saldo atual",
     receitas: "Receitas do mês",
     despesas: "Despesas do mês",
-    projetado: "Entradas e saídas do saldo projetado",
+    projetado: "Entradas e saídas até o mês selecionado",
   };
 
   const currentMonthLabel = new Date().toLocaleDateString("pt-BR", {
@@ -3327,7 +3360,7 @@ export default function FinancePage({ currentUser }) {
           icon={CalendarClock}
           onIconClick={() => setActiveSummaryCard("projetado")}
           tone={
-            monthData.projectedBalance >= 0
+            projectedAccountBalance >= 0
               ? "primary"
               : "warning"
           }
@@ -3373,7 +3406,7 @@ export default function FinancePage({ currentUser }) {
             )}
             {activeSummaryCard === "projetado" && (
               <p style={{ color: COLORS.inkSoft, fontSize: 11 }}>
-                Saldo atual: {money(currentTotalBalance)}. Abaixo, entradas e saídas ainda pendentes neste mês. Compras no cartão entram somente quando a fatura é paga.
+                Saldo atual: {money(currentTotalBalance)}. Abaixo, entradas e saídas pendentes até o fim de {monthLabel}. Compras no cartão entram somente quando a fatura é paga.
               </p>
             )}
             {(activeSummaryCard === "receitas" || activeSummaryCard === "despesas") && (
